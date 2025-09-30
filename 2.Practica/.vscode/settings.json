@@ -1,7 +1,0 @@
-{
-  "files.associations": {
-    "*.embeddedhtml": "html",
-    "in.h": "c",
-    "stdio.h": "c"
-  }
-}
