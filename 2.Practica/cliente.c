@@ -31,7 +31,7 @@ int main ( )
   	sd = socket (AF_INET, SOCK_STREAM, 0);
 	if (sd == -1)
 	{
-		perror("No se puede abrir el socket cliente\n");
+		perror("-Err. No se puede abrir el socket cliente\n");
     		exit (1);	
 	}
 
@@ -42,7 +42,7 @@ int main ( )
 		servidor y el puerto del servicio que solicitamos
 	-------------------------------------------------------------------*/
 	sockname.sin_family = AF_INET;
-	sockname.sin_port = htons(2000);
+	sockname.sin_port = htons(1865); // Puerto del servidor para la conexión del cliente
 	sockname.sin_addr.s_addr =  inet_addr("127.0.0.1");
 
 	/* ------------------------------------------------------------------
@@ -52,7 +52,7 @@ int main ( )
 	
 	if (connect(sd, (struct sockaddr *)&sockname, len_sockname) == -1)
 	{
-		perror ("Error de conexión");
+		perror ("-Err. Error de conexión");
 		exit(1);
 	}
     

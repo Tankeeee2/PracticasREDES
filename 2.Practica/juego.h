@@ -1,8 +1,9 @@
 #ifndef JUEGO_H
 #define JUEGO_H
 
-#define MSG_SIZE 250
-#define MAX_CLIENTS 50
+#define MSG_SIZE 200
+#define MAX_CLIENTS 20
+
 
 // Defino los estados de los clientes
 #define INICIO 0
@@ -13,6 +14,11 @@ struct Jugador
     int estado;
     char usuario[MSG_SIZE];
     int socket;
+};
+
+struct Partida
+{
+
 };
 
 typedef struct Jugador Jugador;
@@ -66,6 +72,21 @@ void registrarUsuario(char *usuario, char *password)
     fprintf(fich, "%s %s\n", usuario, password);
 
     fclose(fich);
+}
+
+int tiradaDado()
+{
+    // Generar un número aleatorio entre 1 y 6 para simular la tirada de un dado
+    return (rand() % 6) + 1;
+}
+
+int valorObjetivo()
+{
+    //numero aleatorio entre 60 y 200
+    //return (rand() % 141) + 60;
+
+    //numero aleatorio entre 30 y 40 para pruebas
+    return (rand() % 11) + 30;
 }
 
 #endif

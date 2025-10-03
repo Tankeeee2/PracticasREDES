@@ -59,7 +59,7 @@ int main()
     ret = setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
     sockname.sin_family = AF_INET;
-    sockname.sin_port = htons(2000);
+    sockname.sin_port = htons(1865); // asignamos el puerto 1865
     sockname.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(sd, (struct sockaddr *)&sockname, sizeof(sockname)) == -1)
@@ -108,17 +108,14 @@ int main()
 
             for (i = 0; i < FD_SETSIZE; i++)
             {
-
                 // Buscamos el socket por el que se ha establecido la comunicación
                 if (FD_ISSET(i, &auxfds))
                 {
-
                     if (i == sd)
                     {
-
-                        if ((new_sd = accept(sd, (struct sockaddr *)&from, &from_len)) == -1)
+                        if ((new_sd = accept(sd, (struct sockaddr *)&from, &from_len)) == -1)//comprueba si ha ocurrido un error al aceptar una nueva conexión entrante.          
                         {
-                            perror("Error aceptando peticiones");
+                            perror("-Err. Se ha producido un error al aceptar una nueva conexión entrante");
                         }
                         else
                         {
@@ -126,7 +123,7 @@ int main()
                                 AQUÍ ENTRAMOS CUANDO UN CLIENTE SE HA CONECTADO, ES DECIR:
                                     ./cliente
                             */
-                            if (numClientes < MAX_CLIENTS)
+                            if (numClientes < MAX_CLIENTS)// Si no se ha superado el número máximo de clientes conectados
                             {
                                 Jugador jugadorNuevo;
                                 jugadorNuevo.socket = new_sd;
@@ -136,13 +133,13 @@ int main()
                                 numClientes++;
 
                                 FD_SET(new_sd, &readfds);
-                                strcpy(buffer, "Bienvenido al chat\n");
+                                strcpy(buffer, "Bienvenido al chat del juego de los números\n");
                                 send(new_sd, buffer, sizeof(buffer), 0);
                             }
-                            else
+                            else // Si se ha superado el número máximo de clientes conectados
                             {
                                 bzero(buffer, sizeof(buffer));
-                                strcpy(buffer, "Demasiados clientes conectados\n");
+                                strcpy(buffer, "-Err hay demasiados clientes conectados al servidor\n");
                                 send(new_sd, buffer, sizeof(buffer), 0);
                                 close(new_sd);
                             }
@@ -165,7 +162,7 @@ int main()
                             for (j = 0; j < numClientes; j++)
                             {
                                 bzero(buffer, sizeof(buffer));
-                                strcpy(buffer, "Desconexión servidor\n");
+                                strcpy(buffer, "SALIR recibido, desconectando el servidor...\n");
                                 send(arrayClientes[j].socket, buffer, sizeof(buffer), 0);
                                 close(arrayClientes[j].socket);
                                 FD_CLR(arrayClientes[j].socket, &readfds);
@@ -174,17 +171,27 @@ int main()
                             exit(-1);
                         }
                         // Mensajes que se quieran mandar a los clientes (implementar)
+
+
+                        //Enviar al mensaje con el valor para ganar la partida a los clientes
+                        int valorGanar = valorObjetivo();
+                        // Enviar el valor objetivo a todos los clientes conectados
+                        bzero(buffer, sizeof(buffer));
+                        sprintf(buffer, "El valor objetivo para esta partida es: %d\n", valorGanar);
+                        for (j = 0; j < numClientes; j++) {
+                            send(arrayClientes[j].socket, buffer, sizeof(buffer), 0);
+                        }
                     }
                     else
                     {
                         /*
                         AQUÍ ENTRO SI EL MENSAJE VIENE DE UN CLIENTE
                         */
-                        bzero(buffer, sizeof(buffer));
+                        bzero(buffer, sizeof(buffer));// Limpiamos el buffer
 
-                        recibidos = recv(i, buffer, sizeof(buffer), 0);
+                        recibidos = recv(i, buffer, sizeof(buffer), 0); // Recibimos el mensaje del cliente desde el socket i 
 
-                        if (recibidos > 0)
+                        if (recibidos > 0)// si hemos recibido algo
                         {
                             /*
                                 LA VARIABLE i CONTIENE EL SOCKET DEL CLIENTE QUE HA ENVIADO UN MENSAJE
@@ -192,6 +199,7 @@ int main()
                             if (strcmp(buffer, "SALIR\n") == 0)
                             {
                                 salirCliente(i, &readfds, &numClientes, arrayClientes);
+                                // al recibir SALIR, el cliente se desconecta
                             }
                             else if (strncmp(buffer, "REGISTRO", 8) == 0)
                             {
@@ -214,7 +222,7 @@ int main()
                                         if (encontrado == 1)
                                         {
                                             bzero(buffer, sizeof(buffer));
-                                            strcpy(buffer, "-Err. Ya existe un usuario registrado con ese nombre.");
+                                            strcpy(buffer, "-Err. Ya hay un usuario con el mismo nick.");
                                             send(i, buffer, sizeof(buffer), 0);
                                         }
                                         else
@@ -228,12 +236,27 @@ int main()
                                     else
                                     {
                                         bzero(buffer, sizeof(buffer));
-                                        strcpy(buffer, "-Err. El paquete REGISTRO debe tener el formato: REGISTRO -u usuario -p password.");
+                                        strcpy(buffer, "-Err. El registro tiene que tener el formato: REGISTRO -u usuario -p password.");
                                         send(i, buffer, sizeof(buffer), 0);
                                     }
                                 }
                             }
                             else if (strncmp(buffer, "USUARIO", 7) == 0)
+                            {
+                            }
+                            else if (strncmp(buffer, "PASSWORD", 8) == 0)
+                            {
+                            }
+                            else if (strncmp(buffer, "INICIAR-PARTIDA", 16) == 0)
+                            {
+                            }
+                            else if (strncmp(buffer, "TIRAR-DADOS", 11) == 0)
+                            {
+                            }
+                            else if (strncmp(buffer, "NO-TIRAR-DADOS", 14) == 0)
+                            {
+                            }
+                            else if (strncmp(buffer, "PLANTARME", 9) == 0)
                             {
                             }
                             else
@@ -246,7 +269,7 @@ int main()
                         // Si el cliente introdujo ctrl+c
                         if (recibidos == 0)
                         {
-                            printf("El socket %d, ha introducido ctrl+c\n", i);
+                            printf("El socket %d, ha introducido ctrl+c. Servidor cerrando socket...\n", i);
                             // Eliminar ese socket
                             salirCliente(i, &readfds, &numClientes, arrayClientes);
                         }
