@@ -30,7 +30,7 @@ int main()
     socklen_t from_len;
     fd_set readfds, auxfds;
     int salida;
-    Jugador arrayClientes[MAX_CLIENTS];
+    Jugador arrayClientes[MAX_CLIENTS]; // array de struct Jugador donde guardaremos los clientes conectados
     int numClientes = 0;
     // contadores
     int i, j, k;
@@ -45,7 +45,7 @@ int main()
     sd = socket(AF_INET, SOCK_STREAM, 0);
     if (sd == -1)
     {
-        perror("No se puede abrir el socket cliente\n");
+        perror("-Err. No se puede abrir el socket cliente\n");
         exit(1);
     }
 
@@ -64,7 +64,7 @@ int main()
 
     if (bind(sd, (struct sockaddr *)&sockname, sizeof(sockname)) == -1)
     {
-        perror("Error en la operación bind");
+        perror("-Err.  Error en la operación bind");
         exit(1);
     }
 
@@ -123,20 +123,20 @@ int main()
                                 AQUÍ ENTRAMOS CUANDO UN CLIENTE SE HA CONECTADO, ES DECIR:
                                     ./cliente
                             */
-                            if (numClientes < MAX_CLIENTS)// Si no se ha superado el número máximo de clientes conectados
+                            if (numClientes < MAX_CLIENTS)// Si no se ha superado el número máximo de clientes conectados -> acepto la conexión
                             {
-                                Jugador jugadorNuevo;
-                                jugadorNuevo.socket = new_sd;
-                                jugadorNuevo.estado = INICIO;
+                                Jugador jugadorNuevo;//creamos un nuevo jugador
+                                jugadorNuevo.socket = new_sd;//guardamos el socket del nuevo cliente
+                                jugadorNuevo.estado = INICIO;//inicializamos el estado del jugador
 
-                                arrayClientes[numClientes] = jugadorNuevo;
-                                numClientes++;
+                                arrayClientes[numClientes] = jugadorNuevo;//guardamos el nuevo jugador en el array de clientes
+                                numClientes++;                      // Incrementamos el número de clientes conectados
 
                                 FD_SET(new_sd, &readfds);
-                                strcpy(buffer, "Bienvenido al chat del juego de los números\n");
+                                strcpy(buffer, "+Ok. Usuario conectado \n");
                                 send(new_sd, buffer, sizeof(buffer), 0);
                             }
-                            else // Si se ha superado el número máximo de clientes conectados
+                            else // Si se ha superado el número máximo de clientes conectados -> mensaje de error y cierro el socket
                             {
                                 bzero(buffer, sizeof(buffer));
                                 strcpy(buffer, "-Err hay demasiados clientes conectados al servidor\n");
@@ -201,7 +201,7 @@ int main()
                                 salirCliente(i, &readfds, &numClientes, arrayClientes);
                                 // al recibir SALIR, el cliente se desconecta
                             }
-                            else if (strncmp(buffer, "REGISTRO", 8) == 0)
+                            else if (strncmp(buffer, "REGISTRO", 8) == 0)//funcionalidad de registro
                             {
                                 int pos = buscarSocket(arrayClientes, numClientes, i);
                                 if (arrayClientes[pos].estado != INICIO)
@@ -214,26 +214,31 @@ int main()
                                 else
                                 {
                                     // Si puede enviar el paguete registro
-                                    char usuario[MSG_SIZE];
-                                    char password[MSG_SIZE];
-                                    if (sscanf(buffer, "REGISTRO -u %s -p %s", usuario, password) == 2)
+                                    char usuario[MSG_SIZE];//para guardar el usuario
+                                    char password[MSG_SIZE];//para guardar la contraseña
+                                    if (sscanf(buffer, "REGISTRO -u %s -p %s", usuario, password) == 2)//comprobamos que el foramato del registro es correcto
                                     {
-                                        int encontrado = buscarUsuarioFichero(usuario);
-                                        if (encontrado == 1)
+                                        /*
+                                        Buscamos los usuaios insertados en el fichero  para comprobar que no hay dos usuarios con el mismo nombre
+                                        1 si lo hemos encontrado
+                                        0 si no lo hemos encontrado
+                                        */
+                                        int found = buscarUsuario(usuario);
+                                        if (found == 1)// si hemos encontrado el usuario en el fichero, no se puede registrar
                                         {
-                                            bzero(buffer, sizeof(buffer));
-                                            strcpy(buffer, "-Err. Ya hay un usuario con el mismo nick.");
-                                            send(i, buffer, sizeof(buffer), 0);
+                                            bzero(buffer, sizeof(buffer));//limpiamos el buffer
+                                            strcpy(buffer, "-Err. Ya hay un usuario con el mismo nick.");//mensaje de error
+                                            send(i, buffer, sizeof(buffer), 0);//enviamos el mensaje al cliente
                                         }
-                                        else
+                                        else//si no hemos encontrado el usuario en el fichero, se puede registrar
                                         {
-                                            registrarUsuario(usuario, password);
-                                            bzero(buffer, sizeof(buffer));
-                                            strcpy(buffer, "+OK. Usuario registrado.");
-                                            send(i, buffer, sizeof(buffer), 0);
+                                            registrarUsuario(usuario, password);//registramos el usuario
+                                            bzero(buffer, sizeof(buffer));//limpiamos el buffer
+                                            strcpy(buffer, "+OK. Usuario registrado.");//enviamos mensaje de exito
+                                            send(i, buffer, sizeof(buffer), 0);//enviamos el mensaje al cliente
                                         }
                                     }
-                                    else
+                                    else //En caso de que el formato del registro no sea correcto
                                     {
                                         bzero(buffer, sizeof(buffer));
                                         strcpy(buffer, "-Err. El registro tiene que tener el formato: REGISTRO -u usuario -p password.");

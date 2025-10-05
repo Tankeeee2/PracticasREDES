@@ -11,9 +11,9 @@
 
 struct Jugador
 {
-    int estado;
-    char usuario[MSG_SIZE];
-    int socket;
+    int estado; //estado del jugador
+    char usuario[MSG_SIZE]; //nombre del usuario
+    int socket;//guardamos el socket del cliente
 };
 
 struct Partida
@@ -21,7 +21,7 @@ struct Partida
 
 };
 
-typedef struct Jugador Jugador;
+typedef struct Jugador Jugador; //definimos el tipo Jugador
 
 // FUNCIONES
 int buscarSocket(Jugador *arrayClientes, int numClientes, int socket)
@@ -36,9 +36,9 @@ int buscarSocket(Jugador *arrayClientes, int numClientes, int socket)
     return -1;
 }
 
-int buscarUsuarioFichero(char *usuario)
+int buscarUsuario(char *usuario)
 {
-    FILE *fich = fopen("usuarios.txt", "r");
+    FILE *fich = fopen("users.txt", "r");
     if (fich == NULL)
     {
         printf("-Err. Error de conexión con la base de datos.");
