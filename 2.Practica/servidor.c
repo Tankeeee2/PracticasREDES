@@ -203,16 +203,18 @@ int main()
                             }
                             else if (strncmp(buffer, "REGISTRO", 8) == 0)//funcionalidad de registro
                             {
-                                int pos = buscarSocket(arrayClientes, numClientes, i);
+                                int pos = buscarSocket(arrayClientes, numClientes, i);//Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
                                 if (arrayClientes[pos].estado != INICIO)
                                 {
+                                    //si el estado del cliente no es INICIO 
                                     // No puede enviar el paquete REGISTRO
                                     bzero(buffer, sizeof(buffer));
-                                    strcpy(buffer, "-Err. No se le permite enviar el paquete REGISTRO en estos momentos.");
+                                    strcpy(buffer, "-Err. No se permite enviar REGISTRO en estos momentos.");
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
                                 else
                                 {
+                                    //el estado del cliente es INICIO
                                     // Si puede enviar el paguete registro
                                     char usuario[MSG_SIZE];//para guardar el usuario
                                     char password[MSG_SIZE];//para guardar la contraseña
@@ -220,8 +222,8 @@ int main()
                                     {
                                         /*
                                         Buscamos los usuaios insertados en el fichero  para comprobar que no hay dos usuarios con el mismo nombre
-                                        1 si lo hemos encontrado
-                                        0 si no lo hemos encontrado
+                                        --> 1 si lo hemos encontrado
+                                        --> 0 si no lo hemos encontrado
                                         */
                                         int found = buscarUsuario(usuario);
                                         if (found == 1)// si hemos encontrado el usuario en el fichero, no se puede registrar

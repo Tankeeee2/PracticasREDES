@@ -38,38 +38,42 @@ int buscarSocket(Jugador *arrayClientes, int numClientes, int socket)
 
 int buscarUsuario(char *usuario)
 {
+    //Busca en el fichero users.txt si el usuario ya existe
     FILE *fich = fopen("users.txt", "r");
     if (fich == NULL)
     {
+        //error al abir el fichero
         printf("-Err. Error de conexión con la base de datos.");
         return 0;
     }
 
     char user[MSG_SIZE];
     char pass[MSG_SIZE];
-    while (fscanf(fich, "%s %s", user, pass) == 2)
+    while (fscanf(fich, "%s %s", user, pass) == 2)//MIentras pueda leer dos cadenas (usuario y contraseña) vamos recorriendo el fichero
     {
-        if (strcmp(user, usuario) == 0)
+        if (strcmp(user, usuario) == 0)//si el usuario del fichero es igual al usuario que queremos registrar
         {
-            fclose(fich);
-            return 1;
+            fclose(fich);//cerramos el fichero
+            return 1;//devolvemos 1 si hemos encontrado el usuario (no se puede registrar)
         }
     }
 
-    fclose(fich);
-    return 0;
+    fclose(fich); //cerramos el fichero
+    return 0; //devolvemos 0 si no hemos encontrado el usuario (se puede registrar)
 }
 
-void registrarUsuario(char *usuario, char *password)
+void registrarUsuario(char *usuario, char *password)//almacena el usuario y la contraseña en el fichero users.txt
 {
-    FILE *fich = fopen("usuarios.txt", "a");
+    FILE *fich = fopen("users.txt", "a");
     if (fich == NULL)
     {
+        //error al abir el fichero
         printf("-Err. Error de conexión con la base de datos.");
         return;
     }
 
-    fprintf(fich, "%s %s\n", usuario, password);
+    fprintf(fich, "%s %s\n", usuario, password);//escribimos el usuario y la contraseña en el fichero
+    //de la forma: USUARIO CONTRASEÑA separados por un espacio y cada usuario en una línea diferente
 
     fclose(fich);
 }
