@@ -20,6 +20,7 @@ int main()
     fd_set readfds, auxfds;
     int salida;
     Jugador arrayClientes[MAX_CLIENTS]; // array de struct Jugador donde guardaremos los clientes conectados
+    Partida arrayPartidas[10];          // struct de la partida
     int numClientes = 0;
     // contadores
     int i, j, k;
@@ -36,6 +37,17 @@ int main()
     {
         perror("-Err. No se puede abrir el socket cliente\n");
         exit(1);
+    }
+
+    // INICIALIZAR ARRAY DE PARTIDAS
+    for (i = 0; i < 10; i++)
+    {
+        arrayPartidas[i].pos1 = -1;
+        arrayPartidas[i].pos2 = -1;
+        arrayPartidas[i].turno1 = false;
+        arrayPartidas[i].turno2 = false;
+        arrayPartidas[i].valorObjetivo = valorObjetivo();
+        arrayPartidas[i].status = LIBRE;
     }
 
     // Activaremos una propiedad del socket para permitir· que otros
@@ -328,6 +340,23 @@ int main()
                             }
                             else if (strncmp(buffer, "INICIAR-PARTIDA", 16) == 0)
                             {
+                                // inicio de la partida
+                                int pos = buscarSocket(arrayClientes, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
+                                if (arrayClientes[pos].estado != PASSWORD_VALIDO)
+                                {
+                                    // si el usuario no ha sido validado
+                                    //  No puede enviar el paquete PASSWORD
+                                    bzero(buffer, sizeof(buffer));
+                                    strcpy(buffer, "-Err. No se permite enviar INICAR-PARTIDA en estos momentos.");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
+                                else
+                                {
+                                    arrayClientes[pos].puntuacion = 0;            // inicializamos la puntuación del jugador a 0
+                                    arrayClientes[pos].dado1 = 0;                 // inicializamos el dado1 del jugador a 0
+                                    arrayClientes[pos].dado2 = 0;                 //
+                                    arrayClientes[pos].estado = BUSCANDO_PARTIDA; // cambiamos el estado del jugador a BUSCANDO_PARTIDA
+                                }
                             }
                             else if (strncmp(buffer, "TIRAR-DADOS", 11) == 0)
                             {
@@ -362,7 +391,6 @@ int main()
     return 0;
 }
 
-
 void salirCliente(int socket, fd_set *readfds, int *numClientes, Jugador arrayClientes[])
 {
 
@@ -373,26 +401,27 @@ void salirCliente(int socket, fd_set *readfds, int *numClientes, Jugador arrayCl
     FD_CLR(socket, readfds);
 
     // Re-estructurar el array de clientes
-    for (j = 0; j < (*numClientes); j++){
-        if (arrayClientes[j].socket == socket){
+    for (j = 0; j < (*numClientes); j++)
+    {
+        if (arrayClientes[j].socket == socket)
+        {
             break;
         }
     }
 
-
-    for (; j < (*numClientes) - 1; j++){
+    for (; j < (*numClientes) - 1; j++)
+    {
         (arrayClientes[j] = arrayClientes[j + 1]);
     }
     (*numClientes)--;
 
-
     bzero(buffer, sizeof(buffer));
     sprintf(buffer, "Desconexión del cliente <%d>", socket);
 
-    for (j = 0; j < (*numClientes); j++){
-            send(arrayClientes[j].socket, buffer, sizeof(buffer), 0);
+    for (j = 0; j < (*numClientes); j++)
+    {
+        send(arrayClientes[j].socket, buffer, sizeof(buffer), 0);
     }
-    
 }
 
 void manejador(int signum)

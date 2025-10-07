@@ -13,6 +13,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <arpa/inet.h>
+#include <stdbool.h>
 
 #define MSG_SIZE 200
 #define MAX_CLIENTS 20
@@ -21,21 +22,37 @@
 #define INICIO 0
 #define USUARIO_VALIDO 1
 #define PASSWORD_VALIDO 2
+#define BUSCANDO_PARTIDA 3
+
+// Defino estados para la parida
+#define LIBRE 0;
+#define EN_CURSO 1;
+#define JUGADOR_EN_ESPERA 2;
 
 struct Jugador
 {
     int estado;             // estado del jugador
     char usuario[MSG_SIZE]; // nombre del usuario
     int socket;             // guardamos el socket del cliente
+    int puntuacion;         // puntuación del jugador
+    int dado1;
+    int dado2;
 };
 
 struct Partida
 {
-    int pos1;
-    int pos2;
+    int pos1;    // si en en la partida no hay jugador, pos1 = -1
+    int pos2;    // si en en la partida no hay jugador, pos2 = -1
+    bool turno1; // true si es el turno del jugador 1, false si es el turno del jugador 2
+    bool turno2; // true si es el turno del jugador 2, false si es el turno del jugador 1
+    int valorObjetivo;
+    int status;
+    // int puntuacion1;                        ¿Preguntar cual es mejor implementación?
+    // int puntuacion2;
 };
 
 typedef struct Jugador Jugador; // definimos el tipo Jugador
+typedef struct Partida Partida; // definimos el tipo Partida
 
 // FUNCIONES
 int buscarSocket(Jugador *arrayClientes, int numClientes, int socket)
