@@ -1,1 +1,35 @@
-.vscode
+# Ejecutables sin extensión
+*
+!*.*
+!*/
+
+# Archivos objeto y bibliotecas
+*.o
+*.a
+*.so
+*.lib
+*.dll
+
+# Archivos temporales
+*.swp
+*~
+
+# Archivos de depuración
+*.dSYM/
+*.pdb
+
+# Archivos de VS Code
+.vscode/
+
+# Archivos de configuración específicos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de dependencias y build
+/build/
+/bin/
+/obj/
+
+# Archivos de respaldo
+*.bak
+*.backup
