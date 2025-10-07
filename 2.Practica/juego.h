@@ -11,6 +11,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/time.h>
 #include <arpa/inet.h>
 
 #define MSG_SIZE 200
