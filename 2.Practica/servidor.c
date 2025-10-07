@@ -32,6 +32,7 @@ int main()
     int salida;
     Jugador arrayClientes[MAX_CLIENTS]; // array de struct Jugador donde guardaremos los clientes conectados
     int numClientes = 0;
+    int userFlag = 0; // bandera para saber si el usuario ha sido validado
     // contadores
     int i, j, k;
     int recibidos;
@@ -250,9 +251,92 @@ int main()
                             }
                             else if (strncmp(buffer, "USUARIO", 7) == 0)
                             {
+                                int pos = buscarSocket(arrayClientes, numClientes, i);//Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
+                                if (arrayClientes[pos].estado != INICIO)
+                                {
+                                    //si el estado del cliente no es INICIO 
+                                    // No puede enviar el paquete USUARIO
+                                    bzero(buffer, sizeof(buffer));
+                                    strcpy(buffer, "-Err. No se permite enviar USUARIO en estos momentos.");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
+                                else
+                                {
+                                    //el estado del cliente es INICIO
+                                    // Si puede enviar el paguete USUARIO
+                                    char usuario[MSG_SIZE];//para guardar el usuario
+                                    if (sscanf(buffer, "USUARIO %s", usuario) == 1)//comprobamos que el foramato del registro es correcto
+                                    {
+                                        /*
+                                        Buscamos los usuaios insertados en el fichero  para comprobar que existe ese usuario
+                                        --> 1 si lo hemos encontrado
+                                        --> 0 si no lo hemos encontrado
+                                        */
+                                        int found = buscarUsuario(usuario);//buscamos el usuario en el fichero
+                                        if (found == 0)// si no hemos encontrado el usuario en el fichero, no existe ese usuario
+                                        {
+                                            bzero(buffer, sizeof(buffer));//limpiamos el buffer
+                                            strcpy(buffer, "-Err. No existe ningún usuario con ese nick.");//mensaje de error
+                                            send(i, buffer, sizeof(buffer), 0);//enviamos el mensaje al cliente
+                                        }
+                                        else//si hemos encontrado el usuario en el fichero, existe ese usuario
+                                        {
+                                            //cambiamos el estado del jugador a USUARIO_CORRECTO
+                                            arrayClientes[pos].estado = USUARIO_CORRECTO;
+                                            //strcpy(arrayClientes[pos].usuario, usuario);//guardamos el nombre del usuario en la estructura del jugador ¿preguntar si es necesario?
+                                            bzero(buffer, sizeof(buffer));//limpiamos el buffer
+                                            strcpy(buffer, "+OK. Usuario correcto.");//enviamos mensaje de exito
+                                            send(i, buffer, sizeof(buffer), 0);//enviamos el mensaje al cliente
+                                        }
+                                    }
+                                    else //En caso de que el formato del registro no sea correcto
+                                    {
+                                        bzero(buffer, sizeof(buffer));
+                                        strcpy(buffer, "-Err. El mensaje tiene que tener el formato: USUARIO usuario.");
+                                        send(i, buffer, sizeof(buffer), 0);
+                                    }
+
                             }
                             else if (strncmp(buffer, "PASSWORD", 8) == 0)
                             {
+                                int pos = buscarSocket(arrayClientes, numClientes, i);//Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
+                                if (arrayClientes[pos].estado != USUARIO_CORRECTO;)
+                                {
+                                    //si el usuario no ha sido validado
+                                    // No puede enviar el paquete PASSWORD
+                                    bzero(buffer, sizeof(buffer));
+                                    strcpy(buffer, "-Err. No se permite enviar PASSWORD en estos momentos.");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
+                                else
+                                {
+                                    //el usuario ha sido validado
+                                    // Si puede enviar el paguete PASSWORD
+                                    char password[MSG_SIZE];//para guardar la contraseña
+                                    if (sscanf(buffer, "PASSWORD %s", password) == 1)//comprobamos que el foramato del registro es correcto
+                                    {
+                                        /*
+                                        Buscamos los usuarios y contraseñas insertados en el fichero  para comprobar que la contraseña es correcta
+                                        --> 1 si lo hemos encontrado
+                                        --> 0 si no lo hemos encontrado
+                                        */
+                                        int found = buscarPassword(arrayClientes[pos].usuario, password);
+                                        if (found == 0)// si no hemos encontrado la contraseña en el fichero, la contraseña es incorrecta
+                                        {
+                                            bzero(buffer, sizeof(buffer));//limpiamos el buffer
+                                            strcpy(buffer, "-Err. Contraseña incorrecta.");//mensaje de error
+                                            send(i, buffer, sizeof(buffer), 0);//enviamos el mensaje al cliente
+                                        }
+                                        else//si hemos encontrado la contraseña en el fichero, la contraseña es correcta
+                                        {
+                                            //cambiamos el estado del jugador a USUARIO_VALIDADO
+                                            arrayClientes[pos].estado = USUARIO_VALIDADO;
+                                            bzero(buffer, sizeof(buffer));//limpiamos el buffer
+                                            strcpy(buffer, "+OK. Contraseña correcta. Bienvenido a la partida.");//enviamos mensaje de exito
+                                            send(i, buffer, sizeof(buffer), 0);//enviamos el mensaje al cliente
+                                        }
+                                    }
+                                }
                             }
                             else if (strncmp(buffer, "INICIAR-PARTIDA", 16) == 0)
                             {
@@ -288,6 +372,7 @@ int main()
 
     close(sd);
     return 0;
+}
 }
 
 void salirCliente(int socket, fd_set *readfds, int *numClientes, int arrayClientes[])

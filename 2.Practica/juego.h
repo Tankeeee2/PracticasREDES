@@ -62,6 +62,32 @@ int buscarUsuario(char *usuario)
     return 0; //devolvemos 0 si no hemos encontrado el usuario (se puede registrar)
 }
 
+int buscarPassword(char *usuario, char *password)
+{
+    //Busca en el fichero users.txt si el usuario ya existe
+    FILE *fich = fopen("users.txt", "r");
+    if (fich == NULL)
+    {
+        //error al abir el fichero
+        printf("-Err. Error de conexión con la base de datos.");
+        return 0;
+    }
+
+    char user[MSG_SIZE];
+    char pass[MSG_SIZE];
+    while (fscanf(fich, "%s %s", user, pass) == 2)//MIentras pueda leer dos cadenas (usuario y contraseña) vamos recorriendo el fichero
+    {
+        if (strcmp(pass,  password) == 0)//si el usuario del fichero es igual al usuario que queremos registrar
+        {
+            fclose(fich);//cerramos el fichero
+            return 1;//devolvemos 1 si hemos encontrado el usuario (no se puede registrar)
+        }
+    }
+
+    fclose(fich); //cerramos el fichero
+    return 0; //devolvemos 0 si no hemos encontrado el usuario (se puede registrar)
+}
+
 void registrarUsuario(char *usuario, char *password)//almacena el usuario y la contraseña en el fichero users.txt
 {
     FILE *fich = fopen("users.txt", "a");
