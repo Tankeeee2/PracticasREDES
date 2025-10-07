@@ -5,7 +5,7 @@
  */
 
 void manejador(int signum);
-void salirCliente(int socket, fd_set *readfds, int *numClientes, int arrayClientes[]);
+void salirCliente(int socket, fd_set *readfds, int *numClientes, Jugador arrayClientes[]);
 
 int main()
 {
@@ -21,7 +21,6 @@ int main()
     int salida;
     Jugador arrayClientes[MAX_CLIENTS]; // array de struct Jugador donde guardaremos los clientes conectados
     int numClientes = 0;
-    int userFlag = 0; // bandera para saber si el usuario ha sido validado
     // contadores
     int i, j, k;
     int recibidos;
@@ -364,7 +363,7 @@ int main()
 }
 
 
-void salirCliente(int socket, fd_set *readfds, int *numClientes, int arrayClientes[])
+void salirCliente(int socket, fd_set *readfds, int *numClientes, Jugador arrayClientes[])
 {
 
     char buffer[250];
@@ -374,20 +373,26 @@ void salirCliente(int socket, fd_set *readfds, int *numClientes, int arrayClient
     FD_CLR(socket, readfds);
 
     // Re-estructurar el array de clientes
-    for (j = 0; j < (*numClientes) - 1; j++)
-        if (arrayClientes[j] == socket)
+    for (j = 0; j < (*numClientes); j++){
+        if (arrayClientes[j].socket == socket){
             break;
-    for (; j < (*numClientes) - 1; j++)
-        (arrayClientes[j] = arrayClientes[j + 1]);
+        }
+    }
 
+
+    for (; j < (*numClientes) - 1; j++){
+        (arrayClientes[j] = arrayClientes[j + 1]);
+    }
     (*numClientes)--;
+
 
     bzero(buffer, sizeof(buffer));
     sprintf(buffer, "Desconexión del cliente <%d>", socket);
 
-    for (j = 0; j < (*numClientes); j++)
-        if (arrayClientes[j] != socket)
-            send(arrayClientes[j], buffer, sizeof(buffer), 0);
+    for (j = 0; j < (*numClientes); j++){
+            send(arrayClientes[j].socket, buffer, sizeof(buffer), 0);
+    }
+    
 }
 
 void manejador(int signum)
