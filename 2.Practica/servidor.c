@@ -362,7 +362,7 @@ int main()
     close(sd);
     return 0;
 }
-}
+
 
 void salirCliente(int socket, fd_set *readfds, int *numClientes, int arrayClientes[])
 {
