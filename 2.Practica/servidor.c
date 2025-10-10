@@ -1,5 +1,7 @@
 #include "juego.h"
 
+// comentario prueba merge
+
 /*
  * El servidor ofrece el servicio de un chat
  */
@@ -331,9 +333,9 @@ int main()
                                         {
                                             // cambiamos el estado del jugador a USUARIO_VALIDADO
                                             arrayClientes[pos].estado = PASSWORD_VALIDO;
-                                            bzero(buffer, sizeof(buffer));                                        // limpiamos el buffer
-                                            strcpy(buffer, "+OK. Contraseña correcta. Buscando partida.");        // enviamos mensaje de exito
-                                            send(i, buffer, sizeof(buffer), 0);                                   // enviamos el mensaje al cliente
+                                            bzero(buffer, sizeof(buffer));                                 // limpiamos el buffer
+                                            strcpy(buffer, "+OK. Contraseña correcta. Buscando partida."); // enviamos mensaje de exito
+                                            send(i, buffer, sizeof(buffer), 0);                            // enviamos el mensaje al cliente
                                         }
                                     }
                                 }
@@ -360,8 +362,6 @@ int main()
                                     // Como hacer el emparejamiento de jugadores?
                                     // función emparejamiento()
                                     // despues de emparejar a los jugadores, cambiamos su estado a EN_PARTIDA
-
-
                                 }
                             }
                             else if (strncmp(buffer, "TIRAR-DADOS", 11) == 0)
