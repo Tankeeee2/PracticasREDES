@@ -356,16 +356,71 @@ int main()
                                     arrayClientes[pos].dado1 = 0;                 // inicializamos el dado1 del jugador a 0
                                     arrayClientes[pos].dado2 = 0;                 //
                                     arrayClientes[pos].estado = BUSCANDO_PARTIDA; // cambiamos el estado del jugador a BUSCANDO_PARTIDA
+
+                                    // Como hacer el emparejamiento de jugadores?
+                                    // función emparejamiento()
+                                    // despues de emparejar a los jugadores, cambiamos su estado a EN_PARTIDA
                                 }
                             }
                             else if (strncmp(buffer, "TIRAR-DADOS", 11) == 0)
                             {
+                                int pos = buscarSocket(arrayClientes, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
+                                if (arrayClientes[pos].estado != EN_PARTIDA)
+                                {
+                                    bzero(buffer, sizeof(buffer));
+                                    strcpy(buffer, "-Err. No se permite enviar TIRAR-DADOS en estos momentos.");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
+                                else
+                                {
+                                    // el estado del cliente es EN_PARTIDA
+                                    //  Si puede enviar el paguete TIRAR-DADOS
+                                    int dado1 = tirarDado(); // tiramos el dado 1
+                                    int dado2 = tirarDado(); // tiramos el dado 2
+                                    arrayClientes[pos].dado1 = dado1;
+                                    arrayClientes[pos].dado2 = dado2;
+                                    arrayClientes[pos].puntuacion += dado1 + dado2; // actualizamos la puntuación del jugador
+
+                                    bzero(buffer, sizeof(buffer));
+                                    sprintf(buffer, "+OK. Has sacado un %d y un %d. Tu puntuación actual es %d.\n", dado1, dado2, arrayClientes[pos].puntuacion);
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
                             }
                             else if (strncmp(buffer, "NO-TIRAR-DADOS", 14) == 0)
                             {
+                                int pos = buscarSocket(arrayClientes, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
+                                if (arrayClientes[pos].estado != EN_PARTIDA)
+                                {
+                                    bzero(buffer, sizeof(buffer));
+                                    strcpy(buffer, "-Err. No se permite enviar TIRAR-DADOS en estos momentos.");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
+                                else
+                                {
+                                    // el estado del cliente es EN_PARTIDA
+                                    //  Si puede enviar el paguete NO-TIRAR-DADOS
+                                    bzero(buffer, sizeof(buffer));
+                                    sprintf(buffer, "+OK. Has decidido no tirar los dados. Tu puntuación actual es %d.\n", arrayClientes[pos].puntuacion);
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
                             }
                             else if (strncmp(buffer, "PLANTARME", 9) == 0)
                             {
+                                int pos = buscarSocket(arrayClientes, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
+                                if (arrayClientes[pos].estado != EN_PARTIDA)
+                                {
+                                    bzero(buffer, sizeof(buffer));
+                                    strcpy(buffer, "-Err. No se permite enviar TIRAR-DADOS en estos momentos.");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
+                                else
+                                {
+                                    // el estado del cliente es EN_PARTIDA
+                                    //  Si puede enviar el paguete NO-TIRAR-DADOS
+                                    bzero(buffer, sizeof(buffer));
+                                    sprintf(buffer, "+OK. Has decidido plantarte. Tu puntuación actual es %d.\n", arrayClientes[pos].puntuacion);
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
                             }
                             else
                             {
@@ -393,7 +448,7 @@ int main()
 
 void salirCliente(int socket, fd_set *readfds, int *numClientes, Jugador arrayClientes[])
 {
-
+    // como va está funcón?
     char buffer[250];
     int j;
 

@@ -23,6 +23,7 @@
 #define USUARIO_VALIDO 1
 #define PASSWORD_VALIDO 2
 #define BUSCANDO_PARTIDA 3
+#define EN_PARTIDA 4
 
 // Defino estados para la parida
 #define LIBRE 0;
