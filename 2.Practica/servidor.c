@@ -360,34 +360,7 @@ int main()
                                     // Como hacer el emparejamiento de jugadores?
                                     // función emparejamiento()
                                     // despues de emparejar a los jugadores, cambiamos su estado a EN_PARTIDA
-                                    int jugador1=-1;
-                                    int jugador2=-1;
 
-                                    for(int j = 0; j<numClientes; j++){
-
-                                        if(arrayClientes[j].estado == BUSCANDO_PARTIDA){
-
-                                            if(jugador1 == -1){
-
-                                            jugador1 = j;
-
-                                            }else{
-
-                                            jugador2 = j;
-                                            break;
-
-                                            }
-                                        }
-
-                                    }
-                                    if(jugador1 != -1 && jugador2 != -1){
-                                        int partidaIndex = -1;
-                                        for (int k = 0; k<10;k++){
-                                            if( arrayPartidas[k].estado == LIBRE ){
-
-                                            }
-                                        }
-                                    }
 
                                 }
                             }

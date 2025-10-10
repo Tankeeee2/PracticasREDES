@@ -26,16 +26,15 @@
 #define EN_PARTIDA 4
 
 // Defino estados para la partida
-#define LIBRE 0;
-#define EN_CURSO 1;
-#define JUGADOR_EN_ESPERA 2;
+#define LIBRE 0
+#define EN_CURSO 1
+#define JUGADOR_EN_ESPERA 2
 
 struct Jugador
 {
     int estado;             // estado del jugador
     char usuario[MSG_SIZE]; // nombre del usuario
     int socket;             // guardamos el socket del cliente
-    int puntuacion;         // puntuación del jugador
     int dado1;
     int dado2;
 };
@@ -48,8 +47,8 @@ struct Partida
     bool turno2; // true si es el turno del jugador 2, false si es el turno del jugador 1
     int valorObjetivo;
     int estado;
-    // int puntuacion1;                        ¿Preguntar cual es mejor implementación?
-    // int puntuacion2;
+    int puntuacion1;
+    int puntuacion2;
 };
 
 typedef struct Jugador Jugador; // definimos el tipo Jugador
