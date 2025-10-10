@@ -47,7 +47,7 @@ int main()
         arrayPartidas[i].turno1 = false;
         arrayPartidas[i].turno2 = false;
         arrayPartidas[i].valorObjetivo = valorObjetivo();
-        arrayPartidas[i].status = LIBRE;
+        arrayPartidas[i].estado = LIBRE;
     }
 
     // Activaremos una propiedad del socket para permitir· que otros
@@ -332,7 +332,7 @@ int main()
                                             // cambiamos el estado del jugador a USUARIO_VALIDADO
                                             arrayClientes[pos].estado = PASSWORD_VALIDO;
                                             bzero(buffer, sizeof(buffer));                                        // limpiamos el buffer
-                                            strcpy(buffer, "+OK. Contraseña correcta. Bienvenido a la partida."); // enviamos mensaje de exito
+                                            strcpy(buffer, "+OK. Contraseña correcta. Buscando partida.");        // enviamos mensaje de exito
                                             send(i, buffer, sizeof(buffer), 0);                                   // enviamos el mensaje al cliente
                                         }
                                     }
@@ -360,6 +360,35 @@ int main()
                                     // Como hacer el emparejamiento de jugadores?
                                     // función emparejamiento()
                                     // despues de emparejar a los jugadores, cambiamos su estado a EN_PARTIDA
+                                    int jugador1=-1;
+                                    int jugador2=-1;
+
+                                    for(int j = 0; j<numClientes; j++){
+
+                                        if(arrayClientes[j].estado == BUSCANDO_PARTIDA){
+
+                                            if(jugador1 == -1){
+
+                                            jugador1 = j;
+
+                                            }else{
+
+                                            jugador2 = j;
+                                            break;
+
+                                            }
+                                        }
+
+                                    }
+                                    if(jugador1 != -1 && jugador2 != -1){
+                                        int partidaIndex = -1;
+                                        for (int k = 0; k<10;k++){
+                                            if( arrayPartidas[k].estado == LIBRE ){
+
+                                            }
+                                        }
+                                    }
+
                                 }
                             }
                             else if (strncmp(buffer, "TIRAR-DADOS", 11) == 0)

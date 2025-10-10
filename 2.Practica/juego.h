@@ -25,7 +25,7 @@
 #define BUSCANDO_PARTIDA 3
 #define EN_PARTIDA 4
 
-// Defino estados para la parida
+// Defino estados para la partida
 #define LIBRE 0;
 #define EN_CURSO 1;
 #define JUGADOR_EN_ESPERA 2;
@@ -47,7 +47,7 @@ struct Partida
     bool turno1; // true si es el turno del jugador 1, false si es el turno del jugador 2
     bool turno2; // true si es el turno del jugador 2, false si es el turno del jugador 1
     int valorObjetivo;
-    int status;
+    int estado;
     // int puntuacion1;                        ¿Preguntar cual es mejor implementación?
     // int puntuacion2;
 };
@@ -107,9 +107,9 @@ int buscarPassword(char *usuario, char *password)
 
     char user[MSG_SIZE];
     char pass[MSG_SIZE];
-    while (fscanf(fich, "%s %s", user, pass) == 2) // MIentras pueda leer dos cadenas (usuario y contraseña) vamos recorriendo el fichero
+    while (fscanf(fich, "%s %s", user, pass) == 2) // Mientras pueda leer dos cadenas (usuario y contraseña) vamos recorriendo el fichero
     {
-        if (strcmp(pass, password) == 0) // si el usuario del fichero es igual al usuario que queremos registrar
+        if (strcmp(user, usuario) == 0 && strcmp(pass, password) == 0) // Si usuario Y  contraseña coinciden
         {
             fclose(fich); // cerramos el fichero
             return 1;     // devolvemos 1 si hemos encontrado el usuario (no se puede registrar)
