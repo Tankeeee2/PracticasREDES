@@ -1,5 +1,7 @@
 #include "juego.h"
 
+// comentario prueba merge
+
 /*
  * El servidor ofrece el servicio de un chat
  */
