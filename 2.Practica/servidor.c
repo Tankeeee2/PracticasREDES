@@ -5,7 +5,7 @@
  */
 
 void manejador(int signum);
-void salirCliente(int socket, fd_set *readfds, int *numClientes, Jugador arrayClientes[]);
+void salirCliente(int socket, fd_set *readfds, int *numClientes, Jugador arrayJugadores[]);
 
 int main()
 {
@@ -19,8 +19,8 @@ int main()
     socklen_t from_len;
     fd_set readfds, auxfds;
     int salida;
-    Jugador arrayClientes[MAX_CLIENTS]; // array de struct Jugador donde guardaremos los clientes conectados
-    Partida arrayPartidas[10];          // struct de la partida
+    Jugador arrayJugadores[MAX_CLIENTS]; // array de struct Jugador donde guardaremos los clientes conectados
+    Partida arrayPartidas[MAX_PARTIDAS];          // struct de la partida
     int numClientes = 0;
     // contadores
     int i, j, k;
@@ -40,14 +40,28 @@ int main()
     }
 
     // INICIALIZAR ARRAY DE PARTIDAS
-    for (i = 0; i < 10; i++)
+    for (i = 0; i < MAX_PARTIDAS; i++)
     {
+
         arrayPartidas[i].pos1 = -1;
         arrayPartidas[i].pos2 = -1;
-        arrayPartidas[i].turno1 = false;
-        arrayPartidas[i].turno2 = false;
-        arrayPartidas[i].valorObjetivo = valorObjetivo();
-        arrayPartidas[i].estado = LIBRE;
+        arrayPartidas[i].turno = 0;
+        arrayPartidas[i].valorObjetivo = -1;
+        arrayPartidas[i].estado = VACIA;
+        arrayPartidas[i].puntuacion1 = -1;
+        arrayPartidas[i].puntuacion2 = -1;
+
+    }
+    for (i = 0; i < MAX_CLIENTS; i++)
+    {
+
+        arrayJugadores[i].estado = INICIO;
+        strcpy(arrayJugadores[i].usuario,"");
+        arrayJugadores[i].socket = -1;
+        arrayJugadores[i].dado1 = -1;
+        arrayJugadores[i].dado2 = -1;
+
+
     }
 
     // Activaremos una propiedad del socket para permitir· que otros
@@ -130,7 +144,7 @@ int main()
                                 jugadorNuevo.socket = new_sd; // guardamos el socket del nuevo cliente
                                 jugadorNuevo.estado = INICIO; // inicializamos el estado del jugador
 
-                                arrayClientes[numClientes] = jugadorNuevo; // guardamos el nuevo jugador en el array de clientes
+                                arrayJugadores[numClientes] = jugadorNuevo; // guardamos el nuevo jugador en el array de clientes
                                 numClientes++;                             // Incrementamos el número de clientes conectados
 
                                 FD_SET(new_sd, &readfds);
@@ -164,9 +178,9 @@ int main()
                             {
                                 bzero(buffer, sizeof(buffer));
                                 strcpy(buffer, "SALIR recibido, desconectando el servidor...\n");
-                                send(arrayClientes[j].socket, buffer, sizeof(buffer), 0);
-                                close(arrayClientes[j].socket);
-                                FD_CLR(arrayClientes[j].socket, &readfds);
+                                send(arrayJugadores[j].socket, buffer, sizeof(buffer), 0);
+                                close(arrayJugadores[j].socket);
+                                FD_CLR(arrayJugadores[j].socket, &readfds);
                             }
                             close(sd);
                             exit(-1);
@@ -180,7 +194,7 @@ int main()
                         sprintf(buffer, "El valor objetivo para esta partida es: %d\n", valorGanar);
                         for (j = 0; j < numClientes; j++)
                         {
-                            send(arrayClientes[j].socket, buffer, sizeof(buffer), 0);
+                            send(arrayJugadores[j].socket, buffer, sizeof(buffer), 0);
                         }
                     }
                     else
@@ -199,18 +213,18 @@ int main()
                             */
                             if (strcmp(buffer, "SALIR\n") == 0)
                             {
-                                salirCliente(i, &readfds, &numClientes, arrayClientes);
+                                salirCliente(i, &readfds, &numClientes, arrayJugadores);
                                 // al recibir SALIR, el cliente se desconecta
                             }
-                            else if (strncmp(buffer, "REGISTRO", 8) == 0) // funcionalidad de registro
+                            else if (strncmp(buffer, "REGISTRO \n", 8) == 0) // funcionalidad de registro
                             {
-                                int pos = buscarSocket(arrayClientes, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
-                                if (arrayClientes[pos].estado != INICIO)
+                                int pos = buscarSocket(arrayJugadores, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
+                                if (arrayJugadores[pos].estado != INICIO)
                                 {
                                     // si el estado del cliente no es INICIO
                                     //  No puede enviar el paquete REGISTRO
                                     bzero(buffer, sizeof(buffer));
-                                    strcpy(buffer, "-Err. No se permite enviar REGISTRO en estos momentos.");
+                                    strcpy(buffer, "-Err. No se permite enviar REGISTRO en estos momentos.\n");
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
                                 else
@@ -230,7 +244,7 @@ int main()
                                         if (found == 1) // si hemos encontrado el usuario en el fichero, no se puede registrar
                                         {
                                             bzero(buffer, sizeof(buffer));                                // limpiamos el buffer
-                                            strcpy(buffer, "-Err. Ya hay un usuario con el mismo nick."); // mensaje de error
+                                            strcpy(buffer, "-Err. Ya hay un usuario con el mismo nick.\n"); // mensaje de error
                                             send(i, buffer, sizeof(buffer), 0);                           // enviamos el mensaje al cliente
                                         }
                                         else // si no hemos encontrado el usuario en el fichero, se puede registrar
@@ -244,20 +258,20 @@ int main()
                                     else // En caso de que el formato del registro no sea correcto
                                     {
                                         bzero(buffer, sizeof(buffer));
-                                        strcpy(buffer, "-Err. El registro tiene que tener el formato: REGISTRO -u usuario -p password.");
+                                        strcpy(buffer, "-Err. El registro tiene que tener el formato: REGISTRO -u usuario -p password.\n");
                                         send(i, buffer, sizeof(buffer), 0);
                                     }
                                 }
                             }
                             else if (strncmp(buffer, "USUARIO", 7) == 0)
                             {
-                                int pos = buscarSocket(arrayClientes, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
-                                if (arrayClientes[pos].estado != INICIO)
+                                int pos = buscarSocket(arrayJugadores, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
+                                if (arrayJugadores[pos].estado != INICIO)
                                 {
                                     // si el estado del cliente no es INICIO
                                     //  No puede enviar el paquete USUARIO
                                     bzero(buffer, sizeof(buffer));
-                                    strcpy(buffer, "-Err. No se permite enviar USUARIO en estos momentos.");
+                                    strcpy(buffer, "-Err. No se permite enviar USUARIO en estos momentos.\n");
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
                                 else
@@ -276,14 +290,14 @@ int main()
                                         if (found == 0)                     // si no hemos encontrado el usuario en el fichero, no existe ese usuario
                                         {
                                             bzero(buffer, sizeof(buffer));                                  // limpiamos el buffer
-                                            strcpy(buffer, "-Err. No existe ningún usuario con ese nick."); // mensaje de error
+                                            strcpy(buffer, "-Err. No existe ningún usuario con ese nick.\n"); // mensaje de error
                                             send(i, buffer, sizeof(buffer), 0);                             // enviamos el mensaje al cliente
                                         }
                                         else // si hemos encontrado el usuario en el fichero, existe ese usuario
                                         {
                                             // cambiamos el estado del jugador a USUARIO_CORRECTO
-                                            arrayClientes[pos].estado = USUARIO_VALIDO;
-                                            // strcpy(arrayClientes[pos].usuario, usuario);//guardamos el nombre del usuario en la estructura del jugador ¿preguntar si es necesario?
+                                            arrayJugadores[pos].estado = USUARIO_VALIDO;
+                                            // strcpy(arrayJugadores[pos].usuario, usuario);//guardamos el nombre del usuario en la estructura del jugador ¿preguntar si es necesario?
                                             bzero(buffer, sizeof(buffer));            // limpiamos el buffer
                                             strcpy(buffer, "+OK. Usuario correcto."); // enviamos mensaje de exito
                                             send(i, buffer, sizeof(buffer), 0);       // enviamos el mensaje al cliente
@@ -292,20 +306,20 @@ int main()
                                     else // En caso de que el formato del registro no sea correcto
                                     {
                                         bzero(buffer, sizeof(buffer));
-                                        strcpy(buffer, "-Err. El mensaje tiene que tener el formato: USUARIO usuario.");
+                                        strcpy(buffer, "-Err. El mensaje tiene que tener el formato: USUARIO usuario.\n");
                                         send(i, buffer, sizeof(buffer), 0);
                                     }
                                 }
                             }
                             else if (strncmp(buffer, "PASSWORD", 8) == 0)
                             {
-                                int pos = buscarSocket(arrayClientes, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
-                                if (arrayClientes[pos].estado != USUARIO_VALIDO)
+                                int pos = buscarSocket(arrayJugadores, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
+                                if (arrayJugadores[pos].estado != USUARIO_VALIDO)
                                 {
                                     // si el usuario no ha sido validado
                                     //  No puede enviar el paquete PASSWORD
                                     bzero(buffer, sizeof(buffer));
-                                    strcpy(buffer, "-Err. No se permite enviar PASSWORD en estos momentos.");
+                                    strcpy(buffer, "-Err. No se permite enviar PASSWORD en estos momentos.\n");
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
                                 else
@@ -320,19 +334,19 @@ int main()
                                         --> 1 si lo hemos encontrado
                                         --> 0 si no lo hemos encontrado
                                         */
-                                        int found = buscarPassword(arrayClientes[pos].usuario, password);
+                                        int found = buscarPassword(arrayJugadores[pos].usuario, password);
                                         if (found == 0) // si no hemos encontrado la contraseña en el fichero, la contraseña es incorrecta
                                         {
                                             bzero(buffer, sizeof(buffer));                  // limpiamos el buffer
-                                            strcpy(buffer, "-Err. Contraseña incorrecta."); // mensaje de error
+                                            strcpy(buffer, "-Err. Contraseña incorrecta.\n"); // mensaje de error
                                             send(i, buffer, sizeof(buffer), 0);             // enviamos el mensaje al cliente
                                         }
                                         else // si hemos encontrado la contraseña en el fichero, la contraseña es correcta
                                         {
                                             // cambiamos el estado del jugador a USUARIO_VALIDADO
-                                            arrayClientes[pos].estado = PASSWORD_VALIDO;
+                                            arrayJugadores[pos].estado = PASSWORD_VALIDO;
                                             bzero(buffer, sizeof(buffer));                                        // limpiamos el buffer
-                                            strcpy(buffer, "+OK. Contraseña correcta. Buscando partida.");        // enviamos mensaje de exito
+                                            strcpy(buffer, "+OK. Contraseña correcta. Buscando partida.\n");        // enviamos mensaje de exito
                                             send(i, buffer, sizeof(buffer), 0);                                   // enviamos el mensaje al cliente
                                         }
                                     }
@@ -341,36 +355,70 @@ int main()
                             else if (strncmp(buffer, "INICIAR-PARTIDA", 16) == 0)
                             {
                                 // inicio de la partida
-                                int pos = buscarSocket(arrayClientes, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
-                                if (arrayClientes[pos].estado != PASSWORD_VALIDO)
+                                int pos = buscarSocket(arrayJugadores, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
+                                if (arrayJugadores[pos].estado != PASSWORD_VALIDO)
                                 {
                                     // si el usuario no ha sido validado
                                     //  No puede enviar el paquete PASSWORD
                                     bzero(buffer, sizeof(buffer));
-                                    strcpy(buffer, "-Err. No se permite enviar INICAR-PARTIDA en estos momentos.");
+                                    strcpy(buffer, "-Err. No se permite enviar INICAR-PARTIDA en estos momentos. \n");
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
                                 else
                                 {
-                                    arrayClientes[pos].puntuacion = 0;            // inicializamos la puntuación del jugador a 0
-                                    arrayClientes[pos].dado1 = 0;                 // inicializamos el dado1 del jugador a 0
-                                    arrayClientes[pos].dado2 = 0;                 //
-                                    arrayClientes[pos].estado = BUSCANDO_PARTIDA; // cambiamos el estado del jugador a BUSCANDO_PARTIDA
-
-                                    // Como hacer el emparejamiento de jugadores?
-                                    // función emparejamiento()
-                                    // despues de emparejar a los jugadores, cambiamos su estado a EN_PARTIDA
+                                    arrayJugadores[pos].dado1 = 0;                 // inicializamos el dado1 del jugador a 0
+                                    arrayJugadores[pos].dado2 = 0;                 //
+                                    arrayJugadores[pos].estado = BUSCANDO_PARTIDA; // cambiamos el estado del jugador a BUSCANDO_PARTIDA
 
 
+                                    //Primero busco partida JUGADOR_EN_ESPERA
+
+                                
+                                    for(int i = 0; i<MAX_PARTIDAS; i++){
+                                        if(arrayPartidas[i].estado==JUGADOR_EN_ESPERA){
+
+                                            arrayPartidas[i].puntuacion1 = 0;
+                                            arrayPartidas[i].puntuacion2 = 0;
+
+                                            if(arrayPartidas[i].pos1==-1){
+                                                arrayPartidas[i].pos1=pos;
+
+                                            }else{
+                                                arrayPartidas[i].pos2=pos;
+                                            }
+
+                                            arrayPartidas[i].turno = UNO;
+                                            arrayPartidas[i].valorObjetivo = valorObjetivo();
+                                            arrayPartidas[i].estado = EN_CURSO;
+                                            arrayJugadores[pos].estado=EN_PARTIDA;
+                                            break;
+                                        }
+                                    }
+                                    if(arrayJugadores[pos].estado==BUSCANDO_PARTIDA){
+                                    //Si no, busco partida VACIA
+                                        for(int i = 0; i<MAX_PARTIDAS; i++){
+                                            if(arrayPartidas[i].estado==VACIA){
+
+                                                arrayPartidas[i].puntuacion1 = 0;
+                                                arrayPartidas[i].puntuacion2 = 0;
+                                                arrayPartidas[i].pos1=pos;
+                                                arrayPartidas[i].turno = UNO;
+                                                arrayPartidas[i].valorObjetivo = valorObjetivo();
+                                                arrayPartidas[i].estado = JUGADOR_EN_ESPERA;
+                                                arrayJugadores[pos].estado = EN_PARTIDA;
+                                                break;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             else if (strncmp(buffer, "TIRAR-DADOS", 11) == 0)
                             {
-                                int pos = buscarSocket(arrayClientes, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
-                                if (arrayClientes[pos].estado != EN_PARTIDA)
+                                int pos = buscarSocket(arrayJugadores, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
+                                if (arrayJugadores[pos].estado != EN_PARTIDA)
                                 {
                                     bzero(buffer, sizeof(buffer));
-                                    strcpy(buffer, "-Err. No se permite enviar TIRAR-DADOS en estos momentos.");
+                                    strcpy(buffer, "-Err. No se permite enviar TIRAR-DADOS en estos momentos. \n");
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
                                 else
@@ -379,22 +427,22 @@ int main()
                                     //  Si puede enviar el paguete TIRAR-DADOS
                                     int dado1 = tirarDado(); // tiramos el dado 1
                                     int dado2 = tirarDado(); // tiramos el dado 2
-                                    arrayClientes[pos].dado1 = dado1;
-                                    arrayClientes[pos].dado2 = dado2;
-                                    arrayClientes[pos].puntuacion += dado1 + dado2; // actualizamos la puntuación del jugador
+                                    arrayJugadores[pos].dado1 = dado1;
+                                    arrayJugadores[pos].dado2 = dado2;
+                                    // !!!! arrayJugadores[pos].puntuacion += dado1 + dado2; // actualizamos la puntuación del jugador
 
                                     bzero(buffer, sizeof(buffer));
-                                    sprintf(buffer, "+OK. Has sacado un %d y un %d. Tu puntuación actual es %d.\n", dado1, dado2, arrayClientes[pos].puntuacion);
+                                    // !!!! sprintf(buffer, "+OK. Has sacado un %d y un %d. Tu puntuación actual es %d.\n", dado1, dado2, arrayJugadores[pos].puntuacion);
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
                             }
                             else if (strncmp(buffer, "NO-TIRAR-DADOS", 14) == 0)
                             {
-                                int pos = buscarSocket(arrayClientes, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
-                                if (arrayClientes[pos].estado != EN_PARTIDA)
+                                int pos = buscarSocket(arrayJugadores, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
+                                if (arrayJugadores[pos].estado != EN_PARTIDA)
                                 {
                                     bzero(buffer, sizeof(buffer));
-                                    strcpy(buffer, "-Err. No se permite enviar TIRAR-DADOS en estos momentos.");
+                                    strcpy(buffer, "-Err. No se permite enviar TIRAR-DADOS en estos momentos. \n");
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
                                 else
@@ -402,17 +450,17 @@ int main()
                                     // el estado del cliente es EN_PARTIDA
                                     //  Si puede enviar el paguete NO-TIRAR-DADOS
                                     bzero(buffer, sizeof(buffer));
-                                    sprintf(buffer, "+OK. Has decidido no tirar los dados. Tu puntuación actual es %d.\n", arrayClientes[pos].puntuacion);
+                                    // !!!! sprintf(buffer, "+OK. Has decidido no tirar los dados. Tu puntuación actual es %d.\n", arrayJugadores[pos].puntuacion);
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
                             }
                             else if (strncmp(buffer, "PLANTARME", 9) == 0)
                             {
-                                int pos = buscarSocket(arrayClientes, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
-                                if (arrayClientes[pos].estado != EN_PARTIDA)
+                                int pos = buscarSocket(arrayJugadores, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
+                                if (arrayJugadores[pos].estado != EN_PARTIDA)
                                 {
                                     bzero(buffer, sizeof(buffer));
-                                    strcpy(buffer, "-Err. No se permite enviar TIRAR-DADOS en estos momentos.");
+                                    strcpy(buffer, "-Err. No se permite enviar TIRAR-DADOS en estos momentos. \n");
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
                                 else
@@ -420,7 +468,7 @@ int main()
                                     // el estado del cliente es EN_PARTIDA
                                     //  Si puede enviar el paguete NO-TIRAR-DADOS
                                     bzero(buffer, sizeof(buffer));
-                                    sprintf(buffer, "+OK. Has decidido plantarte. Tu puntuación actual es %d.\n", arrayClientes[pos].puntuacion);
+                                    // !!!! sprintf(buffer, "+OK. Has decidido plantarte. Tu puntuación actual es %d.\n", arrayJugadores[pos].puntuacion);
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
                             }
@@ -436,7 +484,7 @@ int main()
                         {
                             printf("El socket %d, ha introducido ctrl+c. Servidor cerrando socket...\n", i);
                             // Eliminar ese socket
-                            salirCliente(i, &readfds, &numClientes, arrayClientes);
+                            salirCliente(i, &readfds, &numClientes, arrayJugadores);
                         }
                     }
                 }
@@ -448,7 +496,7 @@ int main()
     return 0;
 }
 
-void salirCliente(int socket, fd_set *readfds, int *numClientes, Jugador arrayClientes[])
+void salirCliente(int socket, fd_set *readfds, int *numClientes, Jugador arrayJugadores[])
 {
     // como va está funcón?
     char buffer[250];
@@ -460,7 +508,7 @@ void salirCliente(int socket, fd_set *readfds, int *numClientes, Jugador arrayCl
     // Re-estructurar el array de clientes
     for (j = 0; j < (*numClientes); j++)
     {
-        if (arrayClientes[j].socket == socket)
+        if (arrayJugadores[j].socket == socket)
         {
             break;
         }
@@ -468,7 +516,7 @@ void salirCliente(int socket, fd_set *readfds, int *numClientes, Jugador arrayCl
 
     for (; j < (*numClientes) - 1; j++)
     {
-        (arrayClientes[j] = arrayClientes[j + 1]);
+        (arrayJugadores[j] = arrayJugadores[j + 1]);
     }
     (*numClientes)--;
 
@@ -477,7 +525,7 @@ void salirCliente(int socket, fd_set *readfds, int *numClientes, Jugador arrayCl
 
     for (j = 0; j < (*numClientes); j++)
     {
-        send(arrayClientes[j].socket, buffer, sizeof(buffer), 0);
+        send(arrayJugadores[j].socket, buffer, sizeof(buffer), 0);
     }
 }
 

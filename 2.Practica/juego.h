@@ -17,37 +17,60 @@
 
 #define MSG_SIZE 200
 #define MAX_CLIENTS 20
+#define MAX_PARTIDAS 10
 
-// Defino los estados de los clientes
+// ESTADOS JUGADOR
 #define INICIO 0
 #define USUARIO_VALIDO 1
 #define PASSWORD_VALIDO 2
 #define BUSCANDO_PARTIDA 3
 #define EN_PARTIDA 4
 
-// Defino estados para la partida
-#define LIBRE 0
+
+// ESTADOS PARTIDA
+//  Nadie en partida
+#define VACIA 0
+//  Partida con 2 jugadores juegan o van a jugar
 #define EN_CURSO 1
+//  Partida con un jugador esperando
 #define JUGADOR_EN_ESPERA 2
+
+
+// ESTADOS TURNO
+//  Turno Jugador 1
+#define UNO 1
+//  Turno Jugador 2
+#define DOS 2
 
 struct Jugador
 {
-    int estado;             // estado del jugador
-    char usuario[MSG_SIZE]; // nombre del usuario
-    int socket;             // guardamos el socket del cliente
+    //  INICIO 0, USUARIO_VALIDO 1, PASSWORD_VALIDO 2, BUSCANDO_PARTIDA 3, EN_PARTIDA 4
+    int estado;             
+    //  Nombre del usuario
+    char usuario[MSG_SIZE]; 
+    //  Socket del cliente
+    int socket;
+    //  Dado 1
     int dado1;
+    //  Dado 2
     int dado2;
 };
 
 struct Partida
 {
-    int pos1;    // si en en la partida no hay jugador, pos1 = -1
-    int pos2;    // si en en la partida no hay jugador, pos2 = -1
-    bool turno1; // true si es el turno del jugador 1, false si es el turno del jugador 2
-    bool turno2; // true si es el turno del jugador 2, false si es el turno del jugador 1
+    //  pos1=-1 si no hay jugador 1, si no pos1=pos
+    int pos1;    
+    //  pos2=-1 si no hay jugador 2, si no pos2=pos
+    int pos2;   
+    //  UNO si es el turno del jugador 1, DOS si es el turno del jugador 2 
+    int turno;
+    //  Valor al que los jugadores deben llegar con su puntuación
     int valorObjetivo;
+    //  VACIA 0, EN_CURSO 1, JUGADOR_EN_ESPERA 2
     int estado;
+    //  Puntuacion jugador 1
     int puntuacion1;
+    //  Puntuacion jugador 2
     int puntuacion2;
 };
 
@@ -55,6 +78,7 @@ typedef struct Jugador Jugador; // definimos el tipo Jugador
 typedef struct Partida Partida; // definimos el tipo Partida
 
 // FUNCIONES
+
 int buscarSocket(Jugador *arrayClientes, int numClientes, int socket)
 {
     for (size_t i = 0; i < numClientes; i++)
@@ -74,7 +98,7 @@ int buscarUsuario(char *usuario)
     if (fich == NULL)
     {
         // error al abir el fichero
-        printf("-Err. Error de conexión con la base de datos.");
+        printf("-Err. Error de conexión con la base de datos. \n");
         return 0;
     }
 
@@ -100,7 +124,7 @@ int buscarPassword(char *usuario, char *password)
     if (fich == NULL)
     {
         // error al abir el fichero
-        printf("-Err. Error de conexión con la base de datos.");
+        printf("-Err. Error de conexión con la base de datos. \n");
         return 0;
     }
 
@@ -125,7 +149,7 @@ void registrarUsuario(char *usuario, char *password) // almacena el usuario y la
     if (fich == NULL)
     {
         // error al abir el fichero
-        printf("-Err. Error de conexión con la base de datos.");
+        printf("-Err. Error de conexión con la base de datos. \n");
         return;
     }
 
