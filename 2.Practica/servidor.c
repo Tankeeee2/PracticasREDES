@@ -59,8 +59,6 @@ int main()
         arrayJugadores[i].estado = INICIO;
         strcpy(arrayJugadores[i].usuario, "");
         arrayJugadores[i].socket = -1;
-        arrayJugadores[i].dado1 = -1;
-        arrayJugadores[i].dado2 = -1;
     }
 
     // Activaremos una propiedad del socket para permitir· que otros
@@ -365,8 +363,6 @@ int main()
                                 }
                                 else
                                 {
-                                    arrayJugadores[pos].dado1 = 0;                 // inicializamos el dado1 del jugador a 0
-                                    arrayJugadores[pos].dado2 = 0;                 //
                                     arrayJugadores[pos].estado = BUSCANDO_PARTIDA; // cambiamos el estado del jugador a BUSCANDO_PARTIDA
 
                                     // Primero busco partida JUGADOR_EN_ESPERA
@@ -450,25 +446,23 @@ int main()
                                 }
                                 else
                                 {
-
                                     // el estado del cliente es EN_PARTIDA
                                     //  Si puede enviar el paguete TIRAR-DADOS
 
                                     int posPartida = encontrarPosicionPartida(pos, arrayPartidas);
-                                    // !!!! arrayJugadores[pos].puntuacion += dado1 + dado2; // actualizamos la puntuación del jugador
                                     if (posPartida != -1)
                                     {
-                                        // ¿? ES NECESARIO EL CAMPO DADO EN LA ESTRUCTURA JUGADOR?
-                                        // int dado1 = tirarDado(); // tiramos el dado 1
-                                        // int dado2 = tirarDado(); // tiramos el dado 2
-                                        arrayJugadores[pos].dado1 = tirarDado(); // guardamos el valor del dado 1 en la estructura del jugador
-                                        arrayJugadores[pos].dado2 = tirarDado(); // guardamos el valor del dado 2 en la estructura del jugador
-
-                                        int ptos = arrayJugadores[pos].dado1 + arrayJugadores[pos].dado2;
+                                        int dado1 = tiradaDado(); // tiramos el dado 1
+                                        int dado2 = tiradaDado(); // tiramos el dado 2
+                                        int ptos = dado1 + dado2;
+                                        int puntuacion_actual = -1;
+                                        int turno_correcto = 0;
 
                                         if (arrayPartidas[posPartida].turno == UNO && arrayPartidas[posPartida].pos1 == pos) // si somos el jugador 1 y es nuestro turno
                                         {
+                                            turno_correcto = 1;
                                             arrayPartidas[posPartida].puntuacion1 += ptos;                         // actualizamos la puntuación del jugador 1
+                                            puntuacion_actual = arrayPartidas[posPartida].puntuacion1;
                                             int est = comprobarTirada(&arrayPartidas[posPartida], arrayJugadores); // llamamos a la función comprobarGanador para determinar si hay un ganador
                                             if (est == 0)
                                             {
@@ -478,7 +472,9 @@ int main()
                                         }
                                         else if (arrayPartidas[posPartida].turno == DOS && arrayPartidas[posPartida].pos2 == pos) // si somos el jugador 2 y es nuestro turno
                                         {
+                                            turno_correcto = 1;
                                             arrayPartidas[posPartida].puntuacion2 += ptos;                         // actualizamos la puntuación del jugador 2
+                                            puntuacion_actual = arrayPartidas[posPartida].puntuacion2;
                                             int est = comprobarTirada(&arrayPartidas[posPartida], arrayJugadores); // llamamos a la función comprobarGanador para determinar si hay un ganador
                                             if (est == 0)
                                             {
@@ -493,9 +489,12 @@ int main()
                                             send(i, buffer, sizeof(buffer), 0);
                                         }
 
-                                        bzero(buffer, sizeof(buffer));
-                                        sprintf(buffer, "+OK. Has sacado un %d y un %d. Tu puntuación actual es %d.\n", arrayJugadores[pos].dado1, arrayJugadores[pos].dado2, ptos);
-                                        send(i, buffer, sizeof(buffer), 0);
+                                        if (turno_correcto)
+                                        {
+                                            bzero(buffer, sizeof(buffer));
+                                            sprintf(buffer, "+OK. Has sacado un %d y un %d. Tu puntuación actual es %d.\n", dado1, dado2, puntuacion_actual);
+                                            send(i, buffer, sizeof(buffer), 0);
+                                        }
                                     }
                                     else
                                     {

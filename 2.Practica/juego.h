@@ -48,10 +48,6 @@ struct Jugador
     char usuario[MSG_SIZE];
     //  Socket del cliente
     int socket;
-    //  Dado 1
-    int dado1;
-    //  Dado 2
-    int dado2;
 };
 
 struct Partida
