@@ -507,6 +507,7 @@ int main()
                             }
                             else if (strncmp(buffer, "NO-TIRAR-DADOS", 14) == 0)
                             {
+                                // maximo 3 turnos sin tirar dados por jugador
                                 int pos = buscarSocket(arrayJugadores, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
                                 if (arrayJugadores[pos].estado != EN_PARTIDA)
                                 {
@@ -535,6 +536,7 @@ int main()
                                     {
 
                                         // Si el jugador que se planta es el jugador 1
+                                        // cuando un jugador se planta, deja de jugar y el otro jugador sigue jugando hasta que se planta o se pasa
 
                                         if (arrayPartidas[posPartida].turno == UNO && arrayPartidas[posPartida].pos1 == pos) // si somos el jugador 1 y es nuestro turno
                                         {
