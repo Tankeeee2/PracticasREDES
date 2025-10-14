@@ -66,6 +66,10 @@ struct Partida
     int puntuacion1;
     //  Puntuacion jugador 2
     int puntuacion2;
+    //  Skips jugador1
+    int skips1;
+    //  Skips jugador2s
+    int skip2;
 };
 
 typedef struct Jugador Jugador; // definimos el tipo Jugador

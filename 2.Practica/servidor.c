@@ -52,6 +52,8 @@ int main()
         arrayPartidas[i].estado = VACIA;
         arrayPartidas[i].puntuacion1 = -1;
         arrayPartidas[i].puntuacion2 = -1;
+        arrayPartidas[i].skips1=-1;
+        arrayPartidas[i].skip2=-1;
     }
     for (i = 0; i < MAX_CLIENTS; i++)
     {
@@ -374,6 +376,8 @@ int main()
 
                                             arrayPartidas[j].puntuacion1 = 0;
                                             arrayPartidas[j].puntuacion2 = 0;
+                                            arrayPartidas[j].skips1=0;
+                                            arrayPartidas[j].skip2=0;
 
                                             if (arrayPartidas[j].pos1 == -1)
                                             {
@@ -387,6 +391,7 @@ int main()
                                             arrayPartidas[j].turno = UNO;
                                             arrayPartidas[j].valorObjetivo = valorObjetivo();
                                             arrayPartidas[j].estado = EN_CURSO;
+
                                             arrayJugadores[pos].estado = EN_PARTIDA;
 
                                             bzero(buffer, sizeof(buffer));
@@ -405,6 +410,9 @@ int main()
 
                                                 arrayPartidas[j].puntuacion1 = 0;
                                                 arrayPartidas[j].puntuacion2 = 0;
+                                                arrayPartidas[j].skips1=0;
+                                                arrayPartidas[j].skip2=0;
+
                                                 arrayPartidas[j].pos1 = pos;
                                                 arrayPartidas[j].turno = UNO;
                                                 arrayPartidas[j].valorObjetivo = valorObjetivo();
@@ -517,6 +525,10 @@ int main()
                                 else
                                 {
                                     // Preguntar hoy al profesor como implementar
+                                    if (arrayPartidas[posPartida].turno == UNO && arrayPartidas[posPartida].pos1 == pos){
+                                        
+                                    }
+                                    
                                 }
                             }
                             else if (strncmp(buffer, "PLANTARME", 9) == 0)
