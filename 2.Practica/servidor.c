@@ -394,7 +394,7 @@ int main()
                                             arrayJugadores[pos].estado = EN_PARTIDA;
 
                                             bzero(buffer, sizeof(buffer));
-                                            sprintf(buffer, "Partida encontrada , MESA %d \n", i);
+                                            sprintf(buffer, "+Ok. Partida encontrada , mesa %d \n", i);
                                             send(arrayJugadores[pos].socket, buffer, sizeof(buffer), 0);
                                             break;
                                         }
@@ -416,8 +416,12 @@ int main()
                                                 arrayJugadores[pos].estado = EN_PARTIDA;
 
                                                 bzero(buffer, sizeof(buffer));
-                                                sprintf(buffer, "Partida encontrada , MESA %d \n", j);
+                                                sprintf(buffer, "+Ok. Partida encontrada , mesa %d \n", j);
                                                 send(arrayJugadores[pos].socket, buffer, sizeof(buffer), 0);
+                                                bzero(buffer, sizeof(buffer));
+                                                strcpy(buffer, "Opciones disponibles: TIRAR-DADOS , NO-TIRAR-DADOS , PLANTARME  \n");
+                                                send(arrayJugadores[pos].socket, buffer, sizeof(buffer), 0);
+
                                                 break;
                                             }
                                         }
@@ -496,7 +500,7 @@ int main()
                                     else
                                     {
                                         bzero(buffer, sizeof(buffer));
-                                        sprintf(buffer, "-Err. No se ha encontrado la partida en la que está el jugador.\n");
+                                        strcpy(buffer, "-Err. No se ha encontrado la partida en la que está el jugador.\n");
                                         send(i, buffer, sizeof(buffer), 0);
                                     }
                                 }
@@ -512,11 +516,7 @@ int main()
                                 }
                                 else
                                 {
-                                    // el estado del cliente es EN_PARTIDA
-                                    //  Si puede enviar el paguete NO-TIRAR-DADOS
-                                    bzero(buffer, sizeof(buffer));
-                                    // !!!! sprintf(buffer, "+OK. Has decidido no tirar los dados. Tu puntuación actual es %d.\n", arrayJugadores[pos].puntuacion);
-                                    send(i, buffer, sizeof(buffer), 0);
+                                    // Preguntar hoy al profesor como implementar
                                 }
                             }
                             else if (strncmp(buffer, "PLANTARME", 9) == 0)
