@@ -41,6 +41,7 @@
 //  Turno Jugador 2
 #define DOS 2
 
+// MAXIMO NUMERO DE VECES QUE UN JUGADOR PUEDE DECIR NO_TIRAR_DADOS
 #define MAX_NO_TIRAR_DADOS 3
 
 struct Jugador
