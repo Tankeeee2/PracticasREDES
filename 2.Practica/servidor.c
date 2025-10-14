@@ -52,8 +52,8 @@ int main()
         arrayPartidas[i].estado = VACIA;
         arrayPartidas[i].puntuacion1 = -1;
         arrayPartidas[i].puntuacion2 = -1;
-        arrayPartidas[i].skips1=-1;
-        arrayPartidas[i].skip2=-1;
+        arrayPartidas[i].contador_NO_TIRAR_DADOS1 = -1;
+        arrayPartidas[i].contador_NO_TIRAR_DADOS2 = -1;
     }
     for (i = 0; i < MAX_CLIENTS; i++)
     {
@@ -376,8 +376,8 @@ int main()
 
                                             arrayPartidas[j].puntuacion1 = 0;
                                             arrayPartidas[j].puntuacion2 = 0;
-                                            arrayPartidas[j].skips1=0;
-                                            arrayPartidas[j].skip2=0;
+                                            arrayPartidas[j].contador_NO_TIRAR_DADOS1 = 0;
+                                            arrayPartidas[j].contador_NO_TIRAR_DADOS2 = 0;
 
                                             if (arrayPartidas[j].pos1 == -1)
                                             {
@@ -410,9 +410,8 @@ int main()
 
                                                 arrayPartidas[j].puntuacion1 = 0;
                                                 arrayPartidas[j].puntuacion2 = 0;
-                                                arrayPartidas[j].skips1=0;
-                                                arrayPartidas[j].skip2=0;
-
+                                                arrayPartidas[j].contador_NO_TIRAR_DADOS1 = 0;
+                                                arrayPartidas[j].contador_NO_TIRAR_DADOS2 = 0;
                                                 arrayPartidas[j].pos1 = pos;
                                                 arrayPartidas[j].turno = UNO;
                                                 arrayPartidas[j].valorObjetivo = valorObjetivo();
@@ -463,49 +462,76 @@ int main()
                                         int dado1 = tiradaDado(); // tiramos el dado 1
                                         int dado2 = tiradaDado(); // tiramos el dado 2
                                         int ptos = dado1 + dado2;
-                                        int puntuacion_actual = -1;
-                                        int turno_correcto = 0;
+                                        // int puntuacion_actual = -1;
+                                        // int turno_correcto = 0;
 
                                         if (arrayPartidas[posPartida].turno == UNO && arrayPartidas[posPartida].pos1 == pos) // si somos el jugador 1 y es nuestro turno
                                         {
-                                            turno_correcto = 1;
-                                            arrayPartidas[posPartida].puntuacion1 += ptos;                         // actualizamos la puntuación del jugador 1
-                                            puntuacion_actual = arrayPartidas[posPartida].puntuacion1;
-                                            int est = comprobarTirada(&arrayPartidas[posPartida], arrayJugadores); // llamamos a la función comprobarGanador para determinar si hay un ganador
+                                            // turno_correcto = 1;
+                                            arrayPartidas[posPartida].puntuacion1 += ptos; // actualizamos la puntuación del jugador 1
+                                            // puntuacion_actual = arrayPartidas[posPartida].puntuacion1;
+                                            int est = comprobarTirada(&arrayPartidas[posPartida], arrayJugadores); // llamamos a la función para ver si alguien se ha pasado tirando los dados
                                             if (est == 0)
                                             {
                                                 // si no hay ganador
-                                                arrayPartidas[posPartida].turno = DOS; // cambiamos el turno
+                                                if (arrayJugadores[arrayPartidas[posPartida].pos2].estado == EN_PARTIDA_YA_PLANTADO) // si el jugador 2 se ha plantado
+                                                {
+                                                    arrayPartidas[posPartida].turno = UNO; // Nos aseguramos que siga siendo el turno del jugador 1
+                                                }
+                                                else // si el jugador 2 no se ha plantado
+                                                {
+                                                    arrayPartidas[posPartida].turno = DOS; // cambiamos el turno
+                                                }
                                             }
                                         }
-                                        else if (arrayPartidas[posPartida].turno == DOS && arrayPartidas[posPartida].pos2 == pos) // si somos el jugador 2 y es nuestro turno
+                                        else if (arrayPartidas[posPartida].turno == DOS && arrayPartidas[posPartida].pos2 == pos) // si somos el jugador 1 y es nuestro turno
                                         {
-                                            turno_correcto = 1;
-                                            arrayPartidas[posPartida].puntuacion2 += ptos;                         // actualizamos la puntuación del jugador 2
-                                            puntuacion_actual = arrayPartidas[posPartida].puntuacion2;
-                                            int est = comprobarTirada(&arrayPartidas[posPartida], arrayJugadores); // llamamos a la función comprobarGanador para determinar si hay un ganador
+                                            // si somos el jugador 2 y es nuestro turno
+                                            // turno_correcto = 1;
+                                            arrayPartidas[posPartida].puntuacion2 += ptos; // actualizamos la puntuación del jugador 2
+                                            // puntuacion_actual = arrayPartidas[posPartida].puntuacion2;
+                                            int est = comprobarTirada(&arrayPartidas[posPartida], arrayJugadores); // llamamos a la función para ver si alguien se ha pasado tirando los dados
                                             if (est == 0)
                                             {
                                                 // si no hay ganador
-                                                arrayPartidas[posPartida].turno = UNO; // cambiamos el turno
+                                                if (arrayJugadores[arrayPartidas[posPartida].pos1].estado == EN_PARTIDA_YA_PLANTADO) // si el jugador 1 se ha plantado
+                                                {
+                                                    arrayPartidas[posPartida].turno = DOS; // Nos aseguramos que siga siendo el turno del jugador 2
+                                                }
+                                                else // si el jugador 1 no se ha plantado
+                                                {
+                                                    arrayPartidas[posPartida].turno = UNO; // cambiamos el turno
+                                                }
                                             }
                                         }
                                         else // no es nuestro turno
                                         {
+                                            // mensaje de error caundo no es nuestro turno
                                             bzero(buffer, sizeof(buffer));
                                             strcpy(buffer, "-Err. No es tu turno para tirar los dados.\n");
                                             send(i, buffer, sizeof(buffer), 0);
                                         }
 
-                                        if (turno_correcto)
+                                        // después de tirar los dados , actualizar la puntuación y el turno
+                                        // enviar mensaje al cliente con el resultado de la tirada y su puntuación actual
+                                        if (arrayPartidas[posPartida].pos1 == pos) // si tira los dados el jugador 1
                                         {
+                                            int puntuacion_JUG1 = arrayPartidas[posPartida].puntuacion1;
                                             bzero(buffer, sizeof(buffer));
-                                            sprintf(buffer, "+OK. Has sacado un %d y un %d. Tu puntuación actual es %d.\n", dado1, dado2, puntuacion_actual);
+                                            sprintf(buffer, "+OK. Has sacado un %d y un %d. Tu puntuación actual es %d.\n", dado1, dado2, puntuacion_JUG1);
+                                            send(i, buffer, sizeof(buffer), 0);
+                                        }
+                                        else // si tira los dados el jugador 1
+                                        {
+                                            int puntuacion_JUG2 = arrayPartidas[posPartida].puntuacion2;
+                                            bzero(buffer, sizeof(buffer));
+                                            sprintf(buffer, "+OK. Has sacado un %d y un %d. Tu puntuación actual es %d.\n", dado1, dado2, puntuacion_JUG2);
                                             send(i, buffer, sizeof(buffer), 0);
                                         }
                                     }
                                     else
                                     {
+                                        // mensaje de error
                                         bzero(buffer, sizeof(buffer));
                                         strcpy(buffer, "-Err. No se ha encontrado la partida en la que está el jugador.\n");
                                         send(i, buffer, sizeof(buffer), 0);
@@ -524,11 +550,12 @@ int main()
                                 }
                                 else
                                 {
+
                                     // Preguntar hoy al profesor como implementar
-                                    if (arrayPartidas[posPartida].turno == UNO && arrayPartidas[posPartida].pos1 == pos){
-                                        
+                                    int posPartida = encontrarPosicionPartida(pos, arrayPartidas);
+                                    if (arrayPartidas[posPartida].turno == UNO && arrayPartidas[posPartida].pos1 == pos)
+                                    {
                                     }
-                                    
                                 }
                             }
                             else if (strncmp(buffer, "PLANTARME", 9) == 0)

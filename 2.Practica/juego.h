@@ -25,6 +25,7 @@
 #define PASSWORD_VALIDO 2
 #define BUSCANDO_PARTIDA 3
 #define EN_PARTIDA 4
+#define EN_PARTIDA_YA_PLANTADO 5
 
 // ESTADOS PARTIDA
 //  Nadie en partida
@@ -39,6 +40,8 @@
 #define UNO 1
 //  Turno Jugador 2
 #define DOS 2
+
+#define MAX_NO_TIRAR_DADOS 3;
 
 struct Jugador
 {
@@ -67,9 +70,9 @@ struct Partida
     //  Puntuacion jugador 2
     int puntuacion2;
     //  Skips jugador1
-    int skips1;
-    //  Skips jugador2s
-    int skip2;
+    int contador_NO_TIRAR_DADOS1;
+    //  Skips jugador2
+    int contador_NO_TIRAR_DADOS2;
 };
 
 typedef struct Jugador Jugador; // definimos el tipo Jugador
