@@ -376,41 +376,59 @@ int main()
                                     //Primero busco partida JUGADOR_EN_ESPERA
 
                                 
-                                    for(int i = 0; i<MAX_PARTIDAS; i++){
-                                        if(arrayPartidas[i].estado==JUGADOR_EN_ESPERA){
+                                    for(int j = 0; j<MAX_PARTIDAS; j++){
+                                        if(arrayPartidas[j].estado==JUGADOR_EN_ESPERA){
 
-                                            arrayPartidas[i].puntuacion1 = 0;
-                                            arrayPartidas[i].puntuacion2 = 0;
+                                            arrayPartidas[j].puntuacion1 = 0;
+                                            arrayPartidas[j].puntuacion2 = 0;
 
-                                            if(arrayPartidas[i].pos1==-1){
-                                                arrayPartidas[i].pos1=pos;
+                                            if(arrayPartidas[j].pos1==-1){
+                                                arrayPartidas[j].pos1=pos;
 
                                             }else{
-                                                arrayPartidas[i].pos2=pos;
+                                                arrayPartidas[j].pos2=pos;
                                             }
 
-                                            arrayPartidas[i].turno = UNO;
-                                            arrayPartidas[i].valorObjetivo = valorObjetivo();
-                                            arrayPartidas[i].estado = EN_CURSO;
+                                            arrayPartidas[j].turno = UNO;
+                                            arrayPartidas[j].valorObjetivo = valorObjetivo();
+                                            arrayPartidas[j].estado = EN_CURSO;
                                             arrayJugadores[pos].estado=EN_PARTIDA;
+                                            
+                                            bzero(buffer, sizeof(buffer));
+                                            sprintf(buffer, "Partida encontrada , MESA %d \n",i);
+                                            send(arrayJugadores[pos].socket, buffer, sizeof(buffer), 0);
                                             break;
                                         }
                                     }
                                     if(arrayJugadores[pos].estado==BUSCANDO_PARTIDA){
                                     //Si no, busco partida VACIA
-                                        for(int i = 0; i<MAX_PARTIDAS; i++){
-                                            if(arrayPartidas[i].estado==VACIA){
+                                        for(int j = 0; j<MAX_PARTIDAS; j++){
+                                            if(arrayPartidas[j].estado==VACIA){
 
-                                                arrayPartidas[i].puntuacion1 = 0;
-                                                arrayPartidas[i].puntuacion2 = 0;
-                                                arrayPartidas[i].pos1=pos;
-                                                arrayPartidas[i].turno = UNO;
-                                                arrayPartidas[i].valorObjetivo = valorObjetivo();
-                                                arrayPartidas[i].estado = JUGADOR_EN_ESPERA;
+                                                arrayPartidas[j].puntuacion1 = 0;
+                                                arrayPartidas[j].puntuacion2 = 0;
+                                                arrayPartidas[j].pos1=pos;
+                                                arrayPartidas[j].turno = UNO;
+                                                arrayPartidas[j].valorObjetivo = valorObjetivo();
+                                                arrayPartidas[j].estado = JUGADOR_EN_ESPERA;
                                                 arrayJugadores[pos].estado = EN_PARTIDA;
+                                                
+                                                bzero(buffer, sizeof(buffer));
+                                                sprintf(buffer, "Partida encontrada , MESA %d \n",j);
+                                                send(arrayJugadores[pos].socket, buffer, sizeof(buffer), 0);
                                                 break;
                                             }
                                         }
+                                    }
+                                    
+                                    if(arrayJugadores[pos].estado!=EN_PARTIDA)
+                                    {
+                                        bzero(buffer, sizeof(buffer));
+                                        strcpy(buffer, "NO HAS ENCONTRADO PARTIDA \n");
+                                        send(arrayJugadores[pos].socket, buffer, sizeof(buffer), 0);
+                                    } else
+                                    {
+
                                     }
                                 }
                             }
