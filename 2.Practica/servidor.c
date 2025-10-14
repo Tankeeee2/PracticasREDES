@@ -22,7 +22,7 @@ int main()
     fd_set readfds, auxfds;
     int salida;
     Jugador arrayJugadores[MAX_CLIENTS]; // array de struct Jugador donde guardaremos los clientes conectados
-    Partida arrayPartidas[MAX_PARTIDAS];          // struct de la partida
+    Partida arrayPartidas[MAX_PARTIDAS]; // struct de la partida
     int numClientes = 0;
     // contadores
     int i, j, k;
@@ -52,18 +52,15 @@ int main()
         arrayPartidas[i].estado = VACIA;
         arrayPartidas[i].puntuacion1 = -1;
         arrayPartidas[i].puntuacion2 = -1;
-
     }
     for (i = 0; i < MAX_CLIENTS; i++)
     {
 
         arrayJugadores[i].estado = INICIO;
-        strcpy(arrayJugadores[i].usuario,"");
+        strcpy(arrayJugadores[i].usuario, "");
         arrayJugadores[i].socket = -1;
         arrayJugadores[i].dado1 = -1;
         arrayJugadores[i].dado2 = -1;
-
-
     }
 
     // Activaremos una propiedad del socket para permitir· que otros
@@ -147,7 +144,7 @@ int main()
                                 jugadorNuevo.estado = INICIO; // inicializamos el estado del jugador
 
                                 arrayJugadores[numClientes] = jugadorNuevo; // guardamos el nuevo jugador en el array de clientes
-                                numClientes++;                             // Incrementamos el número de clientes conectados
+                                numClientes++;                              // Incrementamos el número de clientes conectados
 
                                 FD_SET(new_sd, &readfds);
                                 strcpy(buffer, "+Ok. Usuario conectado \n");
@@ -245,9 +242,9 @@ int main()
                                         int found = buscarUsuario(usuario);
                                         if (found == 1) // si hemos encontrado el usuario en el fichero, no se puede registrar
                                         {
-                                            bzero(buffer, sizeof(buffer));                                // limpiamos el buffer
+                                            bzero(buffer, sizeof(buffer));                                  // limpiamos el buffer
                                             strcpy(buffer, "-Err. Ya hay un usuario con el mismo nick.\n"); // mensaje de error
-                                            send(i, buffer, sizeof(buffer), 0);                           // enviamos el mensaje al cliente
+                                            send(i, buffer, sizeof(buffer), 0);                             // enviamos el mensaje al cliente
                                         }
                                         else // si no hemos encontrado el usuario en el fichero, se puede registrar
                                         {
@@ -291,9 +288,9 @@ int main()
                                         int found = buscarUsuario(usuario); // buscamos el usuario en el fichero
                                         if (found == 0)                     // si no hemos encontrado el usuario en el fichero, no existe ese usuario
                                         {
-                                            bzero(buffer, sizeof(buffer));                                  // limpiamos el buffer
+                                            bzero(buffer, sizeof(buffer));                                    // limpiamos el buffer
                                             strcpy(buffer, "-Err. No existe ningún usuario con ese nick.\n"); // mensaje de error
-                                            send(i, buffer, sizeof(buffer), 0);                             // enviamos el mensaje al cliente
+                                            send(i, buffer, sizeof(buffer), 0);                               // enviamos el mensaje al cliente
                                         }
                                         else // si hemos encontrado el usuario en el fichero, existe ese usuario
                                         {
@@ -339,17 +336,17 @@ int main()
                                         int found = buscarPassword(arrayJugadores[pos].usuario, password);
                                         if (found == 0) // si no hemos encontrado la contraseña en el fichero, la contraseña es incorrecta
                                         {
-                                            bzero(buffer, sizeof(buffer));                  // limpiamos el buffer
+                                            bzero(buffer, sizeof(buffer));                    // limpiamos el buffer
                                             strcpy(buffer, "-Err. Contraseña incorrecta.\n"); // mensaje de error
-                                            send(i, buffer, sizeof(buffer), 0);             // enviamos el mensaje al cliente
+                                            send(i, buffer, sizeof(buffer), 0);               // enviamos el mensaje al cliente
                                         }
                                         else // si hemos encontrado la contraseña en el fichero, la contraseña es correcta
                                         {
                                             // cambiamos el estado del jugador a USUARIO_VALIDADO
                                             arrayJugadores[pos].estado = PASSWORD_VALIDO;
-                                            bzero(buffer, sizeof(buffer));                                        // limpiamos el buffer
-                                            strcpy(buffer, "+OK. Contraseña correcta. Buscando partida.\n");        // enviamos mensaje de exito
-                                            send(i, buffer, sizeof(buffer), 0);                                   // enviamos el mensaje al cliente
+                                            bzero(buffer, sizeof(buffer));                                   // limpiamos el buffer
+                                            strcpy(buffer, "+OK. Contraseña correcta. Buscando partida.\n"); // enviamos mensaje de exito
+                                            send(i, buffer, sizeof(buffer), 0);                              // enviamos el mensaje al cliente
                                         }
                                     }
                                 }
@@ -372,68 +369,74 @@ int main()
                                     arrayJugadores[pos].dado2 = 0;                 //
                                     arrayJugadores[pos].estado = BUSCANDO_PARTIDA; // cambiamos el estado del jugador a BUSCANDO_PARTIDA
 
+                                    // Primero busco partida JUGADOR_EN_ESPERA
 
-                                    //Primero busco partida JUGADOR_EN_ESPERA
-
-                                
-                                    for(int j = 0; j<MAX_PARTIDAS; j++){
-                                        if(arrayPartidas[j].estado==JUGADOR_EN_ESPERA){
+                                    for (int j = 0; j < MAX_PARTIDAS; j++)
+                                    {
+                                        if (arrayPartidas[j].estado == JUGADOR_EN_ESPERA)
+                                        {
 
                                             arrayPartidas[j].puntuacion1 = 0;
                                             arrayPartidas[j].puntuacion2 = 0;
 
-                                            if(arrayPartidas[j].pos1==-1){
-                                                arrayPartidas[j].pos1=pos;
-
-                                            }else{
-                                                arrayPartidas[j].pos2=pos;
+                                            if (arrayPartidas[j].pos1 == -1)
+                                            {
+                                                arrayPartidas[j].pos1 = pos;
+                                            }
+                                            else
+                                            {
+                                                arrayPartidas[j].pos2 = pos;
                                             }
 
                                             arrayPartidas[j].turno = UNO;
                                             arrayPartidas[j].valorObjetivo = valorObjetivo();
                                             arrayPartidas[j].estado = EN_CURSO;
-                                            arrayJugadores[pos].estado=EN_PARTIDA;
-                                            
+                                            arrayJugadores[pos].estado = EN_PARTIDA;
+
                                             bzero(buffer, sizeof(buffer));
-                                            sprintf(buffer, "Partida encontrada , MESA %d \n",i);
+                                            sprintf(buffer, "Partida encontrada , MESA %d \n", i);
                                             send(arrayJugadores[pos].socket, buffer, sizeof(buffer), 0);
                                             break;
                                         }
                                     }
-                                    if(arrayJugadores[pos].estado==BUSCANDO_PARTIDA){
-                                    //Si no, busco partida VACIA
-                                        for(int j = 0; j<MAX_PARTIDAS; j++){
-                                            if(arrayPartidas[j].estado==VACIA){
+                                    if (arrayJugadores[pos].estado == BUSCANDO_PARTIDA)
+                                    {
+                                        // Si no, busco partida VACIA
+                                        for (int j = 0; j < MAX_PARTIDAS; j++)
+                                        {
+                                            if (arrayPartidas[j].estado == VACIA)
+                                            {
 
                                                 arrayPartidas[j].puntuacion1 = 0;
                                                 arrayPartidas[j].puntuacion2 = 0;
-                                                arrayPartidas[j].pos1=pos;
+                                                arrayPartidas[j].pos1 = pos;
                                                 arrayPartidas[j].turno = UNO;
                                                 arrayPartidas[j].valorObjetivo = valorObjetivo();
                                                 arrayPartidas[j].estado = JUGADOR_EN_ESPERA;
                                                 arrayJugadores[pos].estado = EN_PARTIDA;
-                                                
+
                                                 bzero(buffer, sizeof(buffer));
-                                                sprintf(buffer, "Partida encontrada , MESA %d \n",j);
+                                                sprintf(buffer, "Partida encontrada , MESA %d \n", j);
                                                 send(arrayJugadores[pos].socket, buffer, sizeof(buffer), 0);
                                                 break;
                                             }
                                         }
                                     }
-                                    
-                                    if(arrayJugadores[pos].estado!=EN_PARTIDA)
+
+                                    if (arrayJugadores[pos].estado != EN_PARTIDA)
                                     {
                                         bzero(buffer, sizeof(buffer));
                                         strcpy(buffer, "NO HAS ENCONTRADO PARTIDA \n");
                                         send(arrayJugadores[pos].socket, buffer, sizeof(buffer), 0);
-                                    } else
+                                    }
+                                    else
                                     {
-
                                     }
                                 }
                             }
                             else if (strncmp(buffer, "TIRAR-DADOS", 11) == 0)
                             {
+                                // cuando tiremos dados, tenemos que comprobar que sea nuestro turno
                                 int pos = buscarSocket(arrayJugadores, numClientes, i); // Esta función busca en el array de clientes el socket que ha enviado el mensaje y devuelve su posición en el array en la variable pos
                                 if (arrayJugadores[pos].estado != EN_PARTIDA)
                                 {
@@ -443,17 +446,59 @@ int main()
                                 }
                                 else
                                 {
+
                                     // el estado del cliente es EN_PARTIDA
                                     //  Si puede enviar el paguete TIRAR-DADOS
-                                    int dado1 = tirarDado(); // tiramos el dado 1
-                                    int dado2 = tirarDado(); // tiramos el dado 2
-                                    arrayJugadores[pos].dado1 = dado1;
-                                    arrayJugadores[pos].dado2 = dado2;
-                                    // !!!! arrayJugadores[pos].puntuacion += dado1 + dado2; // actualizamos la puntuación del jugador
 
-                                    bzero(buffer, sizeof(buffer));
-                                    // !!!! sprintf(buffer, "+OK. Has sacado un %d y un %d. Tu puntuación actual es %d.\n", dado1, dado2, arrayJugadores[pos].puntuacion);
-                                    send(i, buffer, sizeof(buffer), 0);
+                                    int posPartida = encontrarPosicionPartida(pos, arrayPartidas);
+                                    // !!!! arrayJugadores[pos].puntuacion += dado1 + dado2; // actualizamos la puntuación del jugador
+                                    if (posPartida != -1)
+                                    {
+                                        // ¿? ES NECESARIO EL CAMPO DADO EN LA ESTRUCTURA JUGADOR?
+                                        // int dado1 = tirarDado(); // tiramos el dado 1
+                                        // int dado2 = tirarDado(); // tiramos el dado 2
+                                        arrayJugadores[pos].dado1 = tirarDado(); // guardamos el valor del dado 1 en la estructura del jugador
+                                        arrayJugadores[pos].dado2 = tirarDado(); // guardamos el valor del dado 2 en la estructura del jugador
+
+                                        int ptos = arrayJugadores[pos].dado1 + arrayJugadores[pos].dado2;
+
+                                        if (arrayPartidas[posPartida].turno == UNO && arrayPartidas[posPartida].pos1 == pos) // si somos el jugador 1 y es nuestro turno
+                                        {
+                                            arrayPartidas[posPartida].puntuacion1 += ptos;                         // actualizamos la puntuación del jugador 1
+                                            int est = comprobarTirada(&arrayPartidas[posPartida], arrayJugadores); // llamamos a la función comprobarGanador para determinar si hay un ganador
+                                            if (est == 0)
+                                            {
+                                                // si no hay ganador
+                                                arrayPartidas[posPartida].turno = DOS; // cambiamos el turno
+                                            }
+                                        }
+                                        else if (arrayPartidas[posPartida].turno == DOS && arrayPartidas[posPartida].pos2 == pos) // si somos el jugador 2 y es nuestro turno
+                                        {
+                                            arrayPartidas[posPartida].puntuacion2 += ptos;                         // actualizamos la puntuación del jugador 2
+                                            int est = comprobarTirada(&arrayPartidas[posPartida], arrayJugadores); // llamamos a la función comprobarGanador para determinar si hay un ganador
+                                            if (est == 0)
+                                            {
+                                                // si no hay ganador
+                                                arrayPartidas[posPartida].turno = UNO; // cambiamos el turno
+                                            }
+                                        }
+                                        else // no es nuestro turno
+                                        {
+                                            bzero(buffer, sizeof(buffer));
+                                            strcpy(buffer, "-Err. No es tu turno para tirar los dados.\n");
+                                            send(i, buffer, sizeof(buffer), 0);
+                                        }
+
+                                        bzero(buffer, sizeof(buffer));
+                                        sprintf(buffer, "+OK. Has sacado un %d y un %d. Tu puntuación actual es %d.\n", arrayJugadores[pos].dado1, arrayJugadores[pos].dado2, ptos);
+                                        send(i, buffer, sizeof(buffer), 0);
+                                    }
+                                    else
+                                    {
+                                        bzero(buffer, sizeof(buffer));
+                                        sprintf(buffer, "-Err. No se ha encontrado la partida en la que está el jugador.\n");
+                                        send(i, buffer, sizeof(buffer), 0);
+                                    }
                                 }
                             }
                             else if (strncmp(buffer, "NO-TIRAR-DADOS", 14) == 0)
@@ -485,27 +530,57 @@ int main()
                                 }
                                 else
                                 {
+                                    int posPartida = encontrarPosicionPartida(pos, arrayPartidas);
+                                    if (posPartida != -1)
+                                    {
+
+                                        // Si el jugador que se planta es el jugador 1
+
+                                        if (arrayPartidas[posPartida].turno == UNO && arrayPartidas[posPartida].pos1 == pos) // si somos el jugador 1 y es nuestro turno
+                                        {
+                                            bzero(buffer, sizeof(buffer));
+                                            sprintf(buffer, "+OK. Has decidido plantarte. Tu puntuación actual es %d.\n", arrayPartidas[posPartida].puntuacion1);
+                                            send(i, buffer, sizeof(buffer), 0);
+                                            resolverPlantada(&arrayPartidas[posPartida], arrayJugadores); // llamamos a la función plantarse para determinar el ganador
+                                        }
+                                        else if (arrayPartidas[posPartida].turno == DOS && arrayPartidas[posPartida].pos2 == pos) // si somos el jugador 2 y es nuestro turno
+                                        {
+                                            bzero(buffer, sizeof(buffer));
+                                            sprintf(buffer, "+OK. Has decidido plantarte. Tu puntuación actual es %d.\n", arrayPartidas[posPartida].puntuacion2);
+                                            send(i, buffer, sizeof(buffer), 0);
+                                            resolverPlantada(&arrayPartidas[posPartida], arrayJugadores); // llamamos a la función plantarse para determinar el ganador
+                                        }
+                                        else // no es nuestro turno
+                                        {
+                                            bzero(buffer, sizeof(buffer));
+                                            strcpy(buffer, "-Err. No es tu turno.\n");
+                                            send(i, buffer, sizeof(buffer), 0);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        bzero(buffer, sizeof(buffer));
+                                        strcpy(buffer, "-Err. No se ha encontrado la partida en la que está el jugador.\n");
+                                        send(i, buffer, sizeof(buffer), 0);
+                                    }
                                     // el estado del cliente es EN_PARTIDA
                                     //  Si puede enviar el paguete NO-TIRAR-DADOS
-                                    bzero(buffer, sizeof(buffer));
-                                    // !!!! sprintf(buffer, "+OK. Has decidido plantarte. Tu puntuación actual es %d.\n", arrayJugadores[pos].puntuacion);
-                                    send(i, buffer, sizeof(buffer), 0);
                                 }
                             }
-                            else
-                            {
-                                bzero(buffer, sizeof(buffer));
-                                strcpy(buffer, "-Err. Mensaje no reconocido.");
-                                send(i, buffer, sizeof(buffer), 0);
-                            }
                         }
-                        // Si el cliente introdujo ctrl+c
-                        if (recibidos == 0)
+                        else
                         {
-                            printf("El socket %d, ha introducido ctrl+c. Servidor cerrando socket...\n", i);
-                            // Eliminar ese socket
-                            salirCliente(i, &readfds, &numClientes, arrayJugadores);
+                            bzero(buffer, sizeof(buffer));
+                            strcpy(buffer, "-Err. Mensaje no reconocido.");
+                            send(i, buffer, sizeof(buffer), 0);
                         }
+                    }
+                    // Si el cliente introdujo ctrl+c
+                    if (recibidos == 0)
+                    {
+                        printf("El socket %d, ha introducido ctrl+c. Servidor cerrando socket...\n", i);
+                        // Eliminar ese socket
+                        salirCliente(i, &readfds, &numClientes, arrayJugadores);
                     }
                 }
             }
