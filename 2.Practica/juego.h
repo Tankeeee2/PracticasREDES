@@ -212,23 +212,7 @@ int comprobarTirada(struct Partida *partida, struct Jugador jugadores[])
         usuarioRival = jugadores[partida->pos1].usuario;
     }
 
-    // Caso 1: El jugador actual alcanza el valor objetivo exacto -> Gana
-    /*
-    ¿?Preguntar si cuando alcance el valor objetivo exacto, el rival pierde automáticamente
-    if (puntuacionActual == partida->valorObjetivo)
-    {
-        // Mensaje para el ganador
-        snprintf(buffer, MSG_SIZE, "¡HAS GANADO! Has alcanzado el objetivo exacto de %d.\n", partida->valorObjetivo);
-        send(socketActual, buffer, strlen(buffer), 0);
-
-        // Mensaje para el perdedor
-        snprintf(buffer, MSG_SIZE, "Has perdido. Tu rival '%s' alcanzo el objetivo de %d.\n", usuarioRival, partida->valorObjetivo);
-        send(socketRival, buffer, strlen(buffer), 0);
-        return 1; // Hay un ganador
-    }
-    */
-
-    // Caso 2: El jugador actual se pasa del valor objetivo -> Pierde
+    // Caso : El jugador actual se pasa del valor objetivo -> Pierde
     if (puntuacionActual > partida->valorObjetivo)
     {
         // Mensaje para el perdedor

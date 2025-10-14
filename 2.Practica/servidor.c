@@ -508,7 +508,7 @@ int main()
                                         {
                                             // mensaje de error caundo no es nuestro turno
                                             bzero(buffer, sizeof(buffer));
-                                            strcpy(buffer, "-Err. No es tu turno para tirar los dados.\n");
+                                            strcpy(buffer, "-Err. No es tu turno no pudes enviar TIRAR-DADOS\n");
                                             send(i, buffer, sizeof(buffer), 0);
                                         }
 
@@ -545,7 +545,7 @@ int main()
                                 if (arrayJugadores[pos].estado != EN_PARTIDA)
                                 {
                                     bzero(buffer, sizeof(buffer));
-                                    strcpy(buffer, "-Err. No se permite enviar TIRAR-DADOS en estos momentos. \n");
+                                    strcpy(buffer, "-Err. No se permite enviar NO-TIRAR-DADOS en estos momentos. \n");
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
                                 else
@@ -601,7 +601,7 @@ int main()
                                         else // no es nuestro turno
                                         {
                                             bzero(buffer, sizeof(buffer));
-                                            strcpy(buffer, "-Err. No es tu turno.\n");
+                                            strcpy(buffer, "-Err. No es tu turno no puedes enviar NO-TIRAR-DADOS.\n");
                                             send(i, buffer, sizeof(buffer), 0);
                                         }
                                     }
@@ -637,18 +637,35 @@ int main()
                                             sprintf(buffer, "+OK. Has decidido plantarte. Tu puntuación actual es %d.\n", arrayPartidas[posPartida].puntuacion1);
                                             send(i, buffer, sizeof(buffer), 0);
                                             resolverPlantada(&arrayPartidas[posPartida], arrayJugadores); // llamamos a la función plantarse para determinar el ganador
+                                            arrayJugadores[pos].estado = EN_PARTIDA_YA_PLANTADO;
+                                            if (arrayJugadores[arrayPartidas[posPartida].pos1].estado == EN_PARTIDA_YA_PLANTADO && arrayJugadores[arrayPartidas[posPartida].pos2].estado == EN_PARTIDA_YA_PLANTADO)
+                                            {
+                                                resolverPlantada(&arrayPartidas[posPartida], arrayJugadores); // llamamos a la función plantarse para determinar el ganador
+                                            }
+                                            else
+                                            {
+                                                arrayPartidas[posPartida].turno = DOS; // cambiamos el turno al otro jugador
+                                            }
                                         }
                                         else if (arrayPartidas[posPartida].turno == DOS && arrayPartidas[posPartida].pos2 == pos) // si somos el jugador 2 y es nuestro turno
                                         {
                                             bzero(buffer, sizeof(buffer));
                                             sprintf(buffer, "+OK. Has decidido plantarte. Tu puntuación actual es %d.\n", arrayPartidas[posPartida].puntuacion2);
                                             send(i, buffer, sizeof(buffer), 0);
-                                            resolverPlantada(&arrayPartidas[posPartida], arrayJugadores); // llamamos a la función plantarse para determinar el ganador
+                                            arrayJugadores[pos].estado = EN_PARTIDA_YA_PLANTADO;
+                                            if (arrayJugadores[arrayPartidas[posPartida].pos1].estado == EN_PARTIDA_YA_PLANTADO && arrayJugadores[arrayPartidas[posPartida].pos2].estado == EN_PARTIDA_YA_PLANTADO)
+                                            {
+                                                resolverPlantada(&arrayPartidas[posPartida], arrayJugadores); // llamamos a la función plantarse para determinar el ganador
+                                            }
+                                            else
+                                            {
+                                                arrayPartidas[posPartida].turno = UNO; // cambiamos el turno al otro jugador
+                                            }
                                         }
                                         else // no es nuestro turno
                                         {
                                             bzero(buffer, sizeof(buffer));
-                                            strcpy(buffer, "-Err. No es tu turno.\n");
+                                            strcpy(buffer, "-Err. No es tu turno no puedes enviar PLANTARME.\n");
                                             send(i, buffer, sizeof(buffer), 0);
                                         }
                                     }
@@ -658,8 +675,6 @@ int main()
                                         strcpy(buffer, "-Err. No se ha encontrado la partida en la que está el jugador.\n");
                                         send(i, buffer, sizeof(buffer), 0);
                                     }
-                                    // el estado del cliente es EN_PARTIDA
-                                    //  Si puede enviar el paguete NO-TIRAR-DADOS
                                 }
                             }
                         }
