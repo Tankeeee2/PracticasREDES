@@ -484,7 +484,7 @@ int main()
                                                 }
                                             }
                                         }
-                                        else if (arrayPartidas[posPartida].turno == DOS && arrayPartidas[posPartida].pos2 == pos) // si somos el jugador 1 y es nuestro turno
+                                        else if (arrayPartidas[posPartida].turno == DOS && arrayPartidas[posPartida].pos2 == pos) // si somos el jugador 2 y es nuestro turno
                                         {
                                             // si somos el jugador 2 y es nuestro turno
                                             // turno_correcto = 1;
@@ -553,8 +553,63 @@ int main()
 
                                     // Preguntar hoy al profesor como implementar
                                     int posPartida = encontrarPosicionPartida(pos, arrayPartidas);
-                                    if (arrayPartidas[posPartida].turno == UNO && arrayPartidas[posPartida].pos1 == pos)
+                                    if (posPartida != -1)
                                     {
+
+                                        if (arrayPartidas[posPartida].turno == UNO && arrayPartidas[posPartida].pos1 == pos) // si somos el jugador 1 y es nuestro turno
+                                        {
+                                            if (arrayPartidas[posPartida].contador_NO_TIRAR_DADOS1 == MAX_NO_TIRAR_DADOS)
+                                            {
+                                                bzero(buffer, sizeof(buffer));
+                                                strcpy(buffer, "-Err. ya no puedes saltar tu turno más veces\n");
+                                                send(i, buffer, sizeof(buffer), 0);
+                                            }
+                                            else
+                                            {
+                                                arrayPartidas[posPartida].contador_NO_TIRAR_DADOS1++;
+                                                if (arrayJugadores[arrayPartidas[posPartida].pos2].estado == EN_PARTIDA_YA_PLANTADO) // si el jugador 2 se ha plantado
+                                                {
+                                                    arrayPartidas[posPartida].turno = UNO; // Nos aseguramos que siga siendo el turno del jugador 1 aunque se salte el turno
+                                                }
+                                                else // si el jugador 2 no se ha plantado
+                                                {
+                                                    arrayPartidas[posPartida].turno = DOS; // cambiamos el turno porque se ha saltado el turno el jugador 1
+                                                }
+                                            }
+                                        }
+                                        else if (arrayPartidas[posPartida].turno == DOS && arrayPartidas[posPartida].pos2 == pos) // si somos el jugador 2 y es nuestro turno
+                                        {
+                                            if (arrayPartidas[posPartida].contador_NO_TIRAR_DADOS2 == MAX_NO_TIRAR_DADOS)
+                                            {
+                                                bzero(buffer, sizeof(buffer));
+                                                strcpy(buffer, "-Err. ya no puedes saltar tu turno más veces\n");
+                                                send(i, buffer, sizeof(buffer), 0);
+                                            }
+                                            else
+                                            {
+                                                arrayPartidas[posPartida].contador_NO_TIRAR_DADOS2++;
+                                                if (arrayJugadores[arrayPartidas[posPartida].pos1].estado == EN_PARTIDA_YA_PLANTADO) // si el jugador 1 se ha plantado
+                                                {
+                                                    arrayPartidas[posPartida].turno = DOS; // Nos aseguramos que siga siendo el turno del jugador 2 aunque se salte el turno
+                                                }
+                                                else // si el jugador 2 no se ha plantado
+                                                {
+                                                    arrayPartidas[posPartida].turno = UNO; // cambiamos el turno porque se ha saltado el turno el jugador 2
+                                                }
+                                            }
+                                        }
+                                        else // no es nuestro turno
+                                        {
+                                            bzero(buffer, sizeof(buffer));
+                                            strcpy(buffer, "-Err. No es tu turno.\n");
+                                            send(i, buffer, sizeof(buffer), 0);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        bzero(buffer, sizeof(buffer));
+                                        strcpy(buffer, "-Err. No se ha encontrado la partida en la que está el jugador.\n");
+                                        send(i, buffer, sizeof(buffer), 0);
                                     }
                                 }
                             }

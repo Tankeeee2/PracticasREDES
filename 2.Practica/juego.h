@@ -41,7 +41,7 @@
 //  Turno Jugador 2
 #define DOS 2
 
-#define MAX_NO_TIRAR_DADOS 3;
+#define MAX_NO_TIRAR_DADOS 3
 
 struct Jugador
 {
