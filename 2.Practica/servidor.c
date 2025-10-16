@@ -704,7 +704,7 @@ int main()
 void salirCliente(int socket, fd_set *readfds, int *numClientes, Jugador arrayJugadores[])
 {
     // como va está funcón?
-    char buffer[250];
+    char buffer[MSG_SIZE];
     int j;
 
     close(socket);
